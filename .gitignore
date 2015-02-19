@@ -46,3 +46,5 @@ deploy
 Iskdaemon_admin
 gwt-unitCache
 .idea
+src/_imgdb.so
+docs/_build
