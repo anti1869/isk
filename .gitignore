@@ -49,3 +49,5 @@ gwt-unitCache
 src/_imgdb.so
 docs/_build
 /tmp
+/venv*
+/startenv
