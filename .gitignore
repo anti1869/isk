@@ -51,3 +51,4 @@ docs/_build
 /tmp
 /venv*
 /startenv
+/isk-daemon.conf
