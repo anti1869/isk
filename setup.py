@@ -1,7 +1,7 @@
-from setuptools import setup, find_packages, Command
+from setuptools import setup, find_packages, Command, Extension
 import sys
 import os
-
+import subprocess
 
 if sys.version_info < (3, 5):
     raise Exception("This package requires Python 3.5 or higher.")
@@ -79,6 +79,58 @@ class GenVersionCommand(Command):
         pass
 
 
+def prepare_build_kwargs():
+
+    library_dirs = []
+    include_dirs = []
+    libraries = []
+    extra_link_args = ["-g"]
+    imagclib = []
+    extra_compile_args = ["-DImMagick", "-DLinuxBuild", "-g"]
+
+    pathvar = os.environ.get("PATH", "")
+    for pv in map(lambda x: x.rstrip("/"), pathvar.split(':')):
+        if os.path.exists(os.path.join(pv, 'Magick++-config')):
+            break  # pv now holds directory in which Magick++-config was found
+    else:
+        print(
+            "--- ERROR ---\n"
+            "Unable to find Magick++-config. \n"
+            "Are you sure you have ImageMagick and it's development files installed correctly?"
+        )
+        quit()
+
+    imagcflag = subprocess.check_output(["Magick++-config", "--cxxflags", "--cppflags"], universal_newlines=True)
+    if "-I" in imagcflag:
+        if not include_dirs:  # Extract include dir from latter command output and append to include_dirs
+            include_dirs.append([i[2:] for i in imagcflag.split(' ') if i.startswith("-I")][0])
+        imagcflag = imagcflag.replace("\n", " ")
+        imagcflag = imagcflag.split(' ')
+
+        imagclib = subprocess.check_output(["Magick++-config", "--ldflags", "--libs"], universal_newlines=True)
+        imagclib = imagclib.replace("\n", " ")
+        imagclib = imagclib.split(' ')
+
+    extra_compile_args += list(filter(lambda x: bool(x), map(lambda y: y.strip(), imagcflag)))
+    extra_link_args += list(filter(lambda x: bool(x), map(lambda y: y.strip(), imagclib)))
+
+    print("Found the following arguments:")
+    print("extra_compile_args", extra_compile_args)
+    print("extra_link_args", extra_link_args)
+
+    kwargs = {
+        "libraries": libraries,
+        "extra_compile_args": extra_compile_args,
+        "extra_link_args": extra_link_args,
+        "include_dirs": include_dirs,
+        "library_dirs": library_dirs,
+    }
+    return kwargs
+
+
+build_kwargs = prepare_build_kwargs()
+
+
 setup(
     name=PACKAGE_NAME,
     version=get_version(),
@@ -103,6 +155,17 @@ setup(
         "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
+    ext_modules=[
+        Extension(
+            "_imgdb", [
+                "src/iskdaemon/imgSeekLib/imgdb.cpp",
+                "src/iskdaemon/imgSeekLib/haar.cpp",
+                "src/iskdaemon/imgSeekLib/imgdb.i",
+                "src/iskdaemon/imgSeekLib/bloom_filter.cpp",
+                ],
+            swig_opts=['-c++'],
+            **build_kwargs,
+        )],
     install_requires=[
         "colorlog",
     ],
