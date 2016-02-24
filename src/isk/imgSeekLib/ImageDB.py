@@ -29,10 +29,10 @@ import time
 import logging
 
 # isk modules
-import utils
+from isk import utils
 
 try:
-    import imgdb
+    from isk.imgSeekLib import imgdb
 except:
     logging.error("""Unable to load the C++ extension \"_imgdb.so(pyd)\" module.""")
     logging.error("""See http://www.imgseek.net/isk-daemon/documents-1/compiling""")
@@ -45,11 +45,12 @@ SUPPORTED_IMG_EXTS = [ 'jpeg', 'jpg', 'gif', 'png', 'rgb', 'jpe', 'pbm', 'pgm', 
 
 def safe_str(obj):
     """ return the byte string representation of obj """
-    try:
-        return str(obj)
-    except UnicodeEncodeError:
-        # obj is unicode
-        return unicode(obj).encode('unicode_escape')
+    return str(obj)
+    # try:
+    #     return str(obj)
+    # except UnicodeEncodeError:
+    #     # obj is unicode
+    #     return unicode(obj).encode('unicode_escape')
 
 def addCount(dbSpace):
     # add per minutes counting
@@ -73,7 +74,7 @@ def normalizeResults(results):
 
     res = []
     for i in range(len(results) / 2):
-        rid = long(results[i*2])
+        rid = results[i*2]
         rsc = results[i*2+1]
         rsc = -100.0*rsc/38.70  # normalize #TODO is this normalization factor still valid?
         #sanity checks
@@ -127,16 +128,16 @@ class DBSpace:
 #TODO apply memoizing (see utils) to some methods ?
 class ImgDB:   
     def __init__(self, settings):
-        self.dbSpaces = {}
+        self.db_spaces = {}
         self.globalFileName = 'global-imgdb-not-saved-yet'
         # global statistics
         self._settings = settings     
             
     @utils.dumpArgs
     def createdb(self,dbId):
-        if self.dbSpaces.has_key(dbId):
+        if self.db_spaces.has_key(dbId):
             log.warn('Replacing existing database id:'+str(dbId))
-        self.dbSpaces[dbId] = DBSpace(dbId)
+        self.db_spaces[dbId] = DBSpace(dbId)
         self.resetdb(dbId)        
         return dbId
 
@@ -148,7 +149,7 @@ class ImgDB:
     @utils.dumpArgs
     def resetdb(self, dbId):
         if imgdb.resetdb(dbId): # succeeded
-            self.dbSpaces[dbId] = DBSpace(dbId)
+            self.db_spaces[dbId] = DBSpace(dbId)
             log.debug("resetdb() ok")            
             return 1
         return 0
@@ -158,12 +159,12 @@ class ImgDB:
         if imgdb.resetdb(dbId):
             log.warn('Load is replacing existing database id:'+str(dbId))
         dbSpace = DBSpace(dbId)
-        self.dbSpaces[dbId] = dbSpace
+        self.db_spaces[dbId] = dbSpace
         dbSpace.fileName = fname
         
         if not imgdb.loaddb(dbId, fname):
             log.error("Error loading image database")
-            del self.dbSpaces[dbId]
+            del self.db_spaces[dbId]
             return None
         # adjust last added image id
         log.info('| Database loaded: ' + str(dbSpace))
@@ -173,7 +174,7 @@ class ImgDB:
     @utils.requireKnownDbId
     @utils.dumpArgs
     def savedb(self,dbId):        
-        return imgdb.savedb(dbId, self.dbSpaces[dbId].fileName)
+        return imgdb.savedb(dbId, self.db_spaces[dbId].fileName)
             
     @utils.requireKnownDbId
     @utils.dumpArgs
@@ -182,7 +183,7 @@ class ImgDB:
             log.error("Error saving image database")
             return 0
         else:
-            dbSpace = self.dbSpaces[dbId]
+            dbSpace = self.db_spaces[dbId]
             dbSpace.lastSaveTime = time.time()
             dbSpace.fileName = fname
             log.info('| Database id=%s saved to "%s"' % ( dbSpace, fname))
@@ -193,12 +194,12 @@ class ImgDB:
         try:
             dbCount = imgdb.loadalldbs(fname)
             for dbid in self.getDBList():
-                self.dbSpaces[dbid] = DBSpace(dbid)
-                self.dbSpaces[dbid].lastId = self.getImgCount(dbid) + 1
+                self.db_spaces[dbid] = DBSpace(dbid)
+                self.db_spaces[dbid].lastId = self.getImgCount(dbid) + 1
             log.debug('| Database (%s) loaded with %d spaces' %(fname, dbCount))
             self.globalFileName = fname
             return dbCount            
-        except RuntimeError, e:
+        except RuntimeError as e:
             log.error(e)
             return 0
 
@@ -220,7 +221,7 @@ class ImgDB:
         path = safe_str(path)        
         
         addedCount = 0
-        dbSpace = self.dbSpaces[dbId]
+        dbSpace = self.db_spaces[dbId]
         if not os.path.isdir(path):
             log.error("'%s' does not exist or is not a directory" % path)
             return 0
@@ -242,7 +243,7 @@ class ImgDB:
                 # Add image to db
                 try:
                     addedCount += self.addImage(dbId, fil, image_id)
-                except RuntimeError, e:
+                except RuntimeError as e:
                     log.error(e)
 
             elif recurse and os.path.isdir(fil):
@@ -253,19 +254,19 @@ class ImgDB:
     @utils.dumpArgs    
     def removeDb(self, dbId):
         if imgdb.removedb(dbId):
-            del self.dbSpaces[dbId]
+            del self.db_spaces[dbId]
             return True
         return False
 
     @utils.requireKnownDbId
     @utils.dumpArgs    
     def addImageBlob(self, dbId, data, newid = None):
-        dbSpace = self.dbSpaces[dbId]
+        dbSpace = self.db_spaces[dbId]
         
         if not newid:
             newid = dbSpace.lastId
             
-        newid = long(newid)
+        newid = newid
         addCount(dbSpace)
         # call imgdb
         res = imgdb.addImageBlob(dbId, newid, data)
@@ -283,12 +284,12 @@ class ImgDB:
     @utils.requireKnownDbId
     @utils.dumpArgs    
     def addImage(self, dbId, fname,newid = None):
-        dbSpace = self.dbSpaces[dbId]
+        dbSpace = self.db_spaces[dbId]
         
         if not newid:
             newid = dbSpace.lastId
             
-        newid = long(newid)
+        newid = newid
         addCount(dbSpace)
        # call imgdb
         res = imgdb.addImage(dbId, newid, fname)
@@ -313,7 +314,7 @@ class ImgDB:
         dbids = self.getDBList()
         detlist = {}
         for id in dbids:
-            dbSpace = self.dbSpaces[id]
+            dbSpace = self.db_spaces[id]
             detlist[str(id)]= [
                             self.getImgCount(id),
                             dbSpace.queryCount,
@@ -371,19 +372,19 @@ class ImgDB:
     
     @utils.requireKnownDbId
     def getQueryCount(self,dbId):
-        return self.dbSpaces[dbId].queryCount
+        return self.db_spaces[dbId].queryCount
 
     @utils.requireKnownDbId
     def getQueryPerMinCount(self,dbId):
-        return self.dbSpaces[dbId].lastQueryPerMin
+        return self.db_spaces[dbId].lastQueryPerMin
 
     @utils.requireKnownDbId
     def getAddCount(self,dbId):
-        return self.dbSpaces[dbId].addCount
+        return self.db_spaces[dbId].addCount
 
     @utils.requireKnownDbId
     def getAddPerMinCount(self,dbId):
-        return self.dbSpaces[dbId].lastAddPerMin
+        return self.db_spaces[dbId].lastAddPerMin
 
     @utils.requireKnownDbId
     @utils.dumpArgs    
@@ -416,7 +417,7 @@ class ImgDB:
 
     @utils.requireKnownDbId
     def queryImgIDKeywords(self,dbId, imgId, numres, kwJoinType, keywords, fast=False):
-        dbSpace = self.dbSpaces[dbId]
+        dbSpace = self.db_spaces[dbId]
         
         # return [[resId,resRatio]]
         # update internal counters
@@ -460,7 +461,7 @@ class ImgDB:
 
     @utils.requireKnownDbId
     def queryImgBlob(self,dbId,data,numres,sketch=0,fast = False):
-        dbSpace = self.dbSpaces[dbId]
+        dbSpace = self.db_spaces[dbId]
         
         # return [[resId,resRatio]]
         # update internal counters
@@ -477,7 +478,7 @@ class ImgDB:
     @utils.requireKnownDbId
     @utils.dumpArgs    
     def queryImgPath(self,dbId,path,numres,sketch=0, fast = False):
-        dbSpace = self.dbSpaces[dbId]
+        dbSpace = self.db_spaces[dbId]
         
         # return [[resId,resRatio]]
         # update internal counters
@@ -494,7 +495,7 @@ class ImgDB:
     @utils.requireKnownDbId
     @utils.dumpArgs    
     def queryImgID(self,dbId,qid,numres,sketch=0,fast = False):
-        dbSpace = self.dbSpaces[dbId]
+        dbSpace = self.db_spaces[dbId]
         
         # return [[resId,resRatio]]
         # update internal counters

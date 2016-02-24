@@ -213,7 +213,7 @@ class Client:
         try:
             server.send_cmd(cmd)
             server.expect("DELETED")
-        except socket.error, msg:
+        except socket.error as msg:
             server.mark_dead(msg[1])
             return 0
         return 1
@@ -266,7 +266,7 @@ class Client:
             server.send_cmd(cmd)
             line = server.readline()
             return int(line)
-        except socket.error, msg:
+        except socket.error as msg:
             server.mark_dead(msg[1])
             return None
 
@@ -329,7 +329,7 @@ class Client:
         try:
             server.send_cmd(fullcmd)
             server.expect("STORED")
-        except socket.error, msg:
+        except socket.error as msg:
             server.mark_dead(msg[1])
             return 0
         return 1
@@ -353,7 +353,7 @@ class Client:
                 return None
             value = self._recv_value(server, flags, rlen)
             server.expect("END")
-        except (_Error, socket.error), msg:
+        except (_Error, socket.error) as msg:
             if type(msg) is types.TupleType:
                 msg = msg[1]
             server.mark_dead(msg)
@@ -398,7 +398,7 @@ class Client:
         for server in server_keys.keys():
             try:
                 server.send_cmd("get %s" % " ".join(server_keys[server]))
-            except socket.error, msg:
+            except socket.error as msg:
                 server.mark_dead(msg[1])
                 dead_servers.append(server)
 
@@ -417,7 +417,7 @@ class Client:
                         val = self._recv_value(server, flags, rlen)
                         retvals[rkey] = val
                     line = server.readline()
-            except (_Error, socket.error), msg:
+            except (_Error, socket.error) as msg:
                 server.mark_dead(msg)
         return retvals
 
@@ -509,7 +509,7 @@ class _Host:
         # Python 2.3-ism:  s.settimeout(1)
         try:
             s.connect((self.ip, self.port))
-        except socket.error, msg:
+        except socket.error as msg:
             self.mark_dead("connect: %s" % msg[1])
             return None
         self.socket = s
@@ -557,7 +557,7 @@ class _Host:
             foo = self_socket_recv(4096)
             buf += foo
             if len(foo) == 0:
-                raise _Error, ( 'Read %d bytes, expecting %d, '
+                raise _Error( 'Read %d bytes, expecting %d, '
                         'read returned 0 length bytes' % ( len(buf), foo ))
         self.buffer = buf[rlen:]
         return buf[:rlen]
@@ -574,10 +574,10 @@ def check_key(key):
     If test fails throws MemcachedKeyLength error.
     """
     if len(key) > SERVER_MAX_KEY_LENGTH:
-      raise Client.MemcachedKeyLengthError, "Key length is > %s" % SERVER_MAX_KEY_LENGTH
+      raise Client.MemcachedKeyLengthError("Key length is > %s" % SERVER_MAX_KEY_LENGTH)
     for char in key:
       if ord(char) < 33:
-        raise Client.MemcachedKeyCharacterError, "Control characters not allowed"
+        raise Client.MemcachedKeyCharacterError("Control characters not allowed")
 
 def _doctest():
     import doctest, memcache
@@ -587,10 +587,10 @@ def _doctest():
     return doctest.testmod(memcache, globs=globs)
 
 if __name__ == "__main__":
-    print "Testing docstrings..."
+    print("Testing docstrings...")
     _doctest()
-    print "Running tests:"
-    print
+    print("Running tests:")
+    print()
     #servers = ["127.0.0.1:11211", "127.0.0.1:11212"]
     servers = ["127.0.0.1:11211"]
     mc = Client(servers, debug=1)
@@ -600,14 +600,14 @@ if __name__ == "__main__":
             return "%s (%s)" % (val, type(val))
         return "%s" % val
     def test_setget(key, val):
-        print "Testing set/get {'%s': %s} ..." % (to_s(key), to_s(val)),
+        print("Testing set/get {'%s': %s} ..." % (to_s(key), to_s(val)),)
         mc.set(key, val)
         newval = mc.get(key)
         if newval == val:
-            print "OK"
+            print("OK")
             return 1
         else:
-            print "FAIL"
+            print("FAIL")
             return 0
 
     class FooStruct:
@@ -623,33 +623,33 @@ if __name__ == "__main__":
     test_setget("a_string", "some random string")
     test_setget("an_integer", 42)
     if test_setget("long", long(1<<30)):
-        print "Testing delete ...",
+        print("Testing delete ...",)
         if mc.delete("long"):
-            print "OK"
+            print("OK")
         else:
-            print "FAIL"
-    print "Testing get_multi ...",
-    print mc.get_multi(["a_string", "an_integer"])
+            print("FAIL")
+    print("Testing get_multi ...",)
+    print(mc.get_multi(["a_string", "an_integer"]))
 
-    print "Testing get(unknown value) ...",
-    print to_s(mc.get("unknown_value"))
+    print("Testing get(unknown value) ...",)
+    print(to_s(mc.get("unknown_value")))
 
     f = FooStruct()
     test_setget("foostruct", f)
 
-    print "Testing incr ...",
+    print("Testing incr ...",)
     x = mc.incr("an_integer", 1)
     if x == 43:
-        print "OK"
+        print("OK")
     else:
-        print "FAIL"
+        print("FAIL")
 
-    print "Testing decr ...",
+    print("Testing decr ...",)
     x = mc.decr("an_integer", 1)
     if x == 42:
-        print "OK"
+        print("OK")
     else:
-        print "FAIL"
+        print("FAIL")
 
 
 
