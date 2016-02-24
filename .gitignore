@@ -10,3 +10,5 @@ __pycache__/
 *$py.class
 VERSION
 *.so
+.idea
+isk-daemon.log
