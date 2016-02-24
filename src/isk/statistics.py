@@ -1,4 +1,3 @@
-# -*- coding: iso-8859-1 -*-
 ###############################################################################
 # begin                : Sun Aug  6, 2006  4:58 PM
 # copyright            : (C) 2003 by Ricardo Niederberger Cabral

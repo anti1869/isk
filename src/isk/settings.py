@@ -1,4 +1,3 @@
-# -*- coding: iso-8859-1 -*-
 ###############################################################################
 # begin                : Sun Jan  8 21:24:38 BRST 2012
 # copyright            : (C) 2012 by Ricardo Niederberger Cabral
