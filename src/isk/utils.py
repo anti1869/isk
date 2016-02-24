@@ -1,4 +1,3 @@
-# -*- coding: iso-8859-1 -*-
 ###############################################################################
 # begin                : Sun Aug  6, 2006  4:58 PM
 # copyright            : (C) 2003 by Ricardo Niederberger Cabral
@@ -24,20 +23,27 @@
 import logging
 from itertools import chain
 
-log = logging.getLogger('core')
+from isk.exceptions import ImageDBException
+
+logger = logging.getLogger('core')
+
 
 def deprecated(func):
-    """This is a decorator which can be used to mark functions
+    """
+    This is a decorator which can be used to mark functions
     as deprecated. It will result in a warning being emitted
-    when the function is used."""
-    def newFunc(*args, **kwargs):
-        log.warn("Call to deprecated function %s." % func.__name__,
-                      category=DeprecationWarning)
+    when the function is used.
+    """
+    def _wrapper(*args, **kwargs):
+        logger.warn("Call to deprecated function %s." % func.__name__,
+                    category=DeprecationWarning)
         return func(*args, **kwargs)
-    newFunc.__name__ = func.__name__
-    newFunc.__doc__ = func.__doc__
-    newFunc.__dict__.update(func.__dict__)
-    return newFunc
+
+    _wrapper.__name__ = func.__name__
+    _wrapper.__doc__ = func.__doc__
+    _wrapper.__dict__.update(func.__dict__)
+
+    return _wrapper
 
 
 def dump_args(func):
@@ -47,7 +53,8 @@ def dump_args(func):
     fname = func.__name__
 
     def _wrapper(*args, **kwargs):
-        log.debug(
+        # TODO: Use setting whether to actually dump this (many calls clutter log file)
+        logger.debug(
             "%s (%s)",
             fname,
             ", ".join('%s=%r' % entry for entry in chain(zip(argnames, args), kwargs.items()) if entry[0] != 'self')
@@ -56,22 +63,33 @@ def dump_args(func):
     return _wrapper
 
 
-def requireKnownDbId(func):
+def require_known_db_id(func):
     """Checks if the 1st parameter (which should be a dbId is valid (has an internal dbSpace entry)"""
     def _wrapper(imgdb_instance, db_id, *args, **kwargs):
         if db_id not in imgdb_instance.db_spaces:
-            raise ImageDBException("attempt to call %s with unknown dbid %d. Have you created it first with createdb() or loaddb()?" %(func.func_name, args[1]))
+            raise ImageDBException(
+                "Attempt to call %s with unknown dbid %d. "
+                "Have you created it first with createdb() or loaddb()?" % (func.func_name, args[1])
+            )
         return func(imgdb_instance, db_id, *args, **kwargs)
     return _wrapper
 
 
-def tail( f, window=20 ):
-    "returns last n ines from text file"
+def tail(f, n: int = 20) -> str:
+    """
+    Returns last n ines from text file.
+
+    :param f: Already opened file.
+    :param n: How many lines to tail.
+    :return: Last n lines as one string
+    """
+
     # http://stackoverflow.com/questions/136168/get-last-n-lines-of-a-file-with-python-similar-to-tail
+
     BUFSIZ = 1024
     f.seek(0, 2)
     bytes = f.tell()
-    size = window
+    size = n
     block = -1
     data = []
     while size > 0 and bytes > 0:
@@ -82,11 +100,12 @@ def tail( f, window=20 ):
             data.append(f.read(BUFSIZ))
         else:
             # file too small, start from begining
-            f.seek(0,0)
+            f.seek(0, 0)
             # only read what was not read
             data.append(f.read(bytes))
         linesFound = data[-1].count('\n')
         size -= linesFound
         bytes -= BUFSIZ
         block -= 1
-    return '\n'.join(''.join(data).splitlines()[-window:])
+
+    return '\n'.join(''.join(data).splitlines()[-n:])

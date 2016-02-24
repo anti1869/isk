@@ -145,7 +145,7 @@ class ImgDB:
     def closedb(self):
         return imgdb.closeDbase()
         
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def resetdb(self, dbId):
         if imgdb.resetdb(dbId): # succeeded
@@ -171,12 +171,12 @@ class ImgDB:
         dbSpace.lastId = self.getImgCount(dbSpace.id) + 1
         return dbId
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def savedb(self,dbId):        
         return imgdb.savedb(dbId, self.db_spaces[dbId].fileName)
             
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def savedbas(self,dbId,fname):        
         if not imgdb.savedb(dbId, fname):
@@ -214,7 +214,7 @@ class ImgDB:
         log.info('| All database spaces saved at "%s"' % fname)
         return res
             
-    @utils.requireKnownDbId            
+    @utils.require_known_db_id
     @utils.dump_args
     def addDir(self, dbId, path, recurse, fname_as_id=False):
         
@@ -250,7 +250,7 @@ class ImgDB:
                 addedCount += self.addDir(dbId, fil, recurse, fname_as_id)
         return addedCount        
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def removeDb(self, dbId):
         if imgdb.removedb(dbId):
@@ -258,7 +258,7 @@ class ImgDB:
             return True
         return False
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def addImageBlob(self, dbId, data, newid = None):
         dbSpace = self.db_spaces[dbId]
@@ -281,7 +281,7 @@ class ImgDB:
                 self.savealldbs()
         return res
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def addImage(self, dbId, fname,newid = None):
         dbSpace = self.db_spaces[dbId]
@@ -303,7 +303,7 @@ class ImgDB:
                 self.savealldbs()
         return res
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def removeImg(self,dbId,id):
         #TODO should also call the code that saves db after a number of ops
@@ -332,35 +332,35 @@ class ImgDB:
                             ]
         return detlist
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def isImageOnDB(self,dbId,id):
         return imgdb.isImageOnDB(dbId,id)
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def calcAvglDiff(self,dbId,id1,id2):
         return imgdb.calcAvglDiff(dbId, id1,id2)
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def calcDiff(self,dbId,id1,id2):
         return imgdb.calcDiff(dbId, id1,id2)
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getImageDimensions(self,dbId,id):
         return [imgdb.getImageWidth(dbId,id),imgdb.getImageHeight(dbId,id)]
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getImageAvgl(self,dbId,id):
         return imgdb.getImageAvgl(dbId,id)
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getIdsBloomFilter(self,dbId):
         return imgdb.getIdsBloomFilter(dbId)
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getImgCount(self, dbId):
         return imgdb.getImgCount(dbId)
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getImgIdList(self,dbId):
         return imgdb.getImgIdList(dbId)
     
@@ -370,52 +370,52 @@ class ImgDB:
     def getDBList(self):
         return imgdb.getDBList()
     
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getQueryCount(self,dbId):
         return self.db_spaces[dbId].queryCount
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getQueryPerMinCount(self,dbId):
         return self.db_spaces[dbId].lastQueryPerMin
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getAddCount(self,dbId):
         return self.db_spaces[dbId].addCount
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getAddPerMinCount(self,dbId):
         return self.db_spaces[dbId].lastAddPerMin
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def addKeywordImg(self, dbId, imgId, hash):
         return imgdb.addKeywordImg(dbId, imgId, hash)
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getClusterKeywords(self,dbId, numClusters,keywords):
         return imgdb.getClusterKeywords(dbId, numClusters,keywords)
     
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getClusterDb(self,dbId, numClusters):
         return imgdb.getClusterDb(dbId, numClusters)
     
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getKeywordsPopular(self,dbId, numres):
         return imgdb.getKeywordsPopular(dbId, numres)
     
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getKeywordsVisualDistance(self,dbId, distanceType,  keywords):
         return imgdb.getKeywordsVisualDistance(dbId, distanceType,  keywords)
     
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getAllImgsByKeywords(self,dbId, numres, kwJoinType, keywords):
         return imgdb.getAllImgsByKeywords(dbId, numres, kwJoinType, keywords)
     
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def queryImgIDFastKeywords(self,dbId, imgId, numres, kwJoinType, keywords):
         return imgdb.queryImgIDFastKeywords(dbId, imgId, numres, kwJoinType, keywords)
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def queryImgIDKeywords(self,dbId, imgId, numres, kwJoinType, keywords, fast=False):
         dbSpace = self.db_spaces[dbId]
         
@@ -432,34 +432,34 @@ class ImgDB:
         log.debug("queryImgIDKeywords() ret="+str(res))
         return res
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def mostPopularKeywords(self,dbId, imgs, excludedKwds, count, mode):
         res = imgdb.mostPopularKeywords(dbId, imgs, excludedKwds, count, mode)        
         log.debug("mostPopularKeywords() ret="+str(res))
         return res
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def getKeywordsImg(self,dbId, imgId):
         res = imgdb.getKeywordsImg(dbId, imgId)
         log.debug("getKeywordsImg() ret="+str(res))
         return res
     
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def removeAllKeywordImg(self, dbId, imgId):
         return imgdb.removeAllKeywordImg(dbId, imgId)
     
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def removeKeywordImg(self,dbId, imgId, hash):
         return imgdb.removeKeywordImg(dbId, imgId, hash)
     
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def addKeywordsImg(self,dbId, imgId, hashes):
         return imgdb.addKeywordsImg(dbId, imgId, hashes)
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     def queryImgBlob(self,dbId,data,numres,sketch=0,fast = False):
         dbSpace = self.db_spaces[dbId]
         
@@ -475,7 +475,7 @@ class ImgDB:
         log.debug("queryImgBlob() ret="+str(res))        
         return res
 
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def queryImgPath(self,dbId,path,numres,sketch=0, fast = False):
         dbSpace = self.db_spaces[dbId]
@@ -492,7 +492,7 @@ class ImgDB:
         log.debug("queryImgPath() ret="+str(res))        
         return res    
     
-    @utils.requireKnownDbId
+    @utils.require_known_db_id
     @utils.dump_args
     def queryImgID(self,dbId,qid,numres,sketch=0,fast = False):
         dbSpace = self.db_spaces[dbId]
