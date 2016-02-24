@@ -1,7 +1,9 @@
 ###############################################################################
 # begin                : Sun Aug  6, 2006  4:58 PM
-# copyright            : (C) 2003 by Ricardo Niederberger Cabral
+# copyright            : (C) 2012 by Ricardo Niederberger Cabral,
+#                      : (C) 2016 Dmitry Litvinenko
 # email                : ricardo dot cabral at imgseek dot net
+#                      : anti1869@gmail.com
 #
 ###############################################################################
 # This program is free software; you can redistribute it and/or modify
@@ -25,7 +27,7 @@ from itertools import chain
 
 from isk.exceptions import ImageDBException
 
-logger = logging.getLogger('core')
+logger = logging.getLogger(__name__)
 
 
 def deprecated(func):

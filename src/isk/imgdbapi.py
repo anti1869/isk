@@ -1,7 +1,9 @@
 ###############################################################################
 # begin                : Sun Jan  8 21:24:38 BRST 2012
-# copyright            : (C) 2012 by Ricardo Niederberger Cabral
+# copyright            : (C) 2012 by Ricardo Niederberger Cabral,
+#                      : (C) 2016 Dmitry Litvinenko
 # email                : ricardo dot cabral at imgseek dot net
+#                      : anti1869@gmail.com
 #
 ###############################################################################
 # This program is free software; you can redistribute it and/or modify

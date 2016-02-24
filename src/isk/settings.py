@@ -1,7 +1,9 @@
 ###############################################################################
 # begin                : Sun Jan  8 21:24:38 BRST 2012
-# copyright            : (C) 2012 by Ricardo Niederberger Cabral
+# copyright            : (C) 2012 by Ricardo Niederberger Cabral,
+#                      : (C) 2016 Dmitry Litvinenko
 # email                : ricardo dot cabral at imgseek dot net
+#                      : anti1869@gmail.com
 #
 ###############################################################################
 # This program is free software; you can redistribute it and/or modify
@@ -21,72 +23,86 @@
 ###############################################################################
 
 from configparser import SafeConfigParser
-import os
 import logging
+from logging.config import dictConfig
+import os
 
-logger = logging.getLogger('isk-daemon')
+logger = logging.getLogger(__name__)
 
 # Defaults
-core = SafeConfigParser({
-	'startAsDaemon': 'false',  # run as background process on UNIX systems
-	'basePort': '31128',  # base tcp port to start listening at for HTTP requests (admin interface, XML-RPC requests, etc)
-	'debug': 'true',  # print debug messages to console
-	'saveAllOnShutdown': 'true',  # automatically save all database spaces on server shutdown
-	'databasePath': "~/isk-db",  # file where to store database files
-	'saveInterval': '120',  # seconds between each automatic database save
-	'automaticSave': 'false',  # whether the database should be saved automatically
-	'isClustered': 'false',  # run in cluster mode ? If True, make sure subsequent settings are ok
-	'seedPeers': 'isk2host:31128',
-	'bindHostname': 'isk1host',  # hostname for this instance. Other instances may try to connect to this hostname
-	'logPath': 'isk-daemon.log',
-	'logDebug': 'true',
-	'urlDownloaderTimeout': '10',  # timeout in seconds for downloading images from web
-})
+core = SafeConfigParser(
+    {
+        'startAsDaemon': 'false',  # run as background process on UNIX systems
+        'basePort': '31128',  # base tcp port to start listening at for HTTP requests
+        'debug': 'true',  # print debug messages to console
+        'saveAllOnShutdown': 'true',  # automatically save all database spaces on server shutdown
+        'databasePath': "~/isk-db",  # file where to store database files
+        'saveInterval': '120',  # seconds between each automatic database save
+        'automaticSave': 'false',  # whether the database should be saved automatically
+        'isClustered': 'false',  # run in cluster mode ? If True, make sure subsequent settings are ok
+        'seedPeers': 'isk2host:31128',
+        'bindHostname': 'isk1host',  # hostname for this instance. Other instances may try to connect to this hostname
+        'logPath': 'isk-daemon.log',
+        'logDebug': 'true',
+        'urlDownloaderTimeout': '10',  # timeout in seconds for downloading images from web
+    }
+)
+
+CONFIG_FILENAME = "isk.conf"
+COMMON_PLACES = (
+    CONFIG_FILENAME,
+    os.path.expanduser('~/{}'.format(CONFIG_FILENAME)),
+    "/etc/isk/{}".format(CONFIG_FILENAME),
+    # os.path.join(os.environ.get("ISK_CONFIG"), CONFIG_FILENAME),
+)
 
 # read from many possible locations
-conffile = core.read(['isk-daemon.conf',
-						os.path.expanduser('~/isk-daemon.conf'),
-						"/etc/iskdaemon/isk-daemon.conf",  # os.path.join(os.environ.get("ISKCONF"),'isk-daemon.conf'),
-])
+conffile = core.read(COMMON_PLACES)
 
-for sec in ['database', 'daemon', 'cluster']:
-	if not core.has_section(sec):
-		core.add_section(sec)
+for sec in ('database', 'daemon', 'cluster'):
+    if not core.has_section(sec):
+        core.add_section(sec)
 
 # perform some clean up/bulletproofing
 core.set('database', 'databasePath', os.path.expanduser(core.get('database', 'databasePath')))
 
 # fix windows stuff
 if os.name == 'nt':  # fix windows stuff
-	core.set('database', 'databasePath', os.path.expanduser(core.get('database', 'databasePath').replace('/', '\\')))
+    core.set('database', 'databasePath', os.path.expanduser(core.get('database', 'databasePath').replace('/', '\\')))
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'colored': {
+            '()': 'colorlog.ColoredFormatter',
+            'format': "%(log_color)s%(levelname)-8s%(reset)s %(blue)s[%(name)s:%(lineno)s] %(white)s%(message)s"
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'colored',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    }
+}
 
-def setupLogging():
-	# set up logging to file - see previous section for more details
-	if core.getboolean('daemon', 'logDebug'):
-		llevel = logging.DEBUG
-	else:
-		llevel = logging.INFO
-	logging.basicConfig(level=llevel,
-						format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-						datefmt='%m-%d %H:%M',
-						filename=core.get('daemon', 'logPath'))
-	# define a Handler which writes INFO messages or higher to the sys.stderr
-	console = logging.StreamHandler()
-	console.setLevel(logging.DEBUG)  # INFO
-	# set a format which is simpler for console use
-	formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-	# tell the handler to use this format
-	console.setFormatter(formatter)
-	# add the handler to the root logger
-	logging.getLogger('').addHandler(console)
-
-
-setupLogging()
+dictConfig(LOGGING)
 
 if len(conffile) < 1:
-	logger.warn('| no config file (isk-daemon.conf) found. Looked at local dir, home user dir and /etc/iskdaemon. Using defaults for everything.')
+    logger.warning(
+        'No config file (%s) found. '
+        'Looked at %s '
+        'Using defaults for everything.',
+        CONFIG_FILENAME,
+        COMMON_PLACES,
+    )
 else:
-	logger.info('| using config file "%s"' % conffile[0])
-
-
+    logger.info('Using config file "%s"' % conffile[0])
