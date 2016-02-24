@@ -12,3 +12,6 @@ VERSION
 *.so
 .idea
 isk-daemon.log
+*.egg-info
+/build
+/dist
