@@ -22,6 +22,7 @@
 ###############################################################################
 
 import logging
+from itertools import chain
 
 log = logging.getLogger('core')
 
@@ -38,27 +39,30 @@ def deprecated(func):
     newFunc.__dict__.update(func.__dict__)
     return newFunc
 
-def dumpArgs(func):
-    "This decorator dumps out the arguments passed to a function before calling it"
-    # argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
-    # fname = func.func_name
-    # def echoFunc(*args,**kwargs):
-    #     log.debug(fname+ "(" + ', '.join('%s=%r' % entry
-    #                                 for entry in zip(argnames,args) + kwargs.items() if entry[0] != 'self') + ')')
-    #     return func(*args, **kwargs)
-    # return echoFunc
+
+def dump_args(func):
+    """This decorator dumps out the arguments passed to a function before calling it"""
+
+    argnames = func.__code__.co_varnames[:func.__code__.co_argcount]
+    fname = func.__name__
+
     def _wrapper(*args, **kwargs):
+        log.debug(
+            "%s (%s)",
+            fname,
+            ", ".join('%s=%r' % entry for entry in chain(zip(argnames, args), kwargs.items()) if entry[0] != 'self')
+        )
         return func(*args, **kwargs)
     return _wrapper
 
 
 def requireKnownDbId(func):
     """Checks if the 1st parameter (which should be a dbId is valid (has an internal dbSpace entry)"""
-    def checkFunc(*args,**kwargs):
-        if not args[0].dbSpaces.has_key(args[1]):
+    def _wrapper(imgdb_instance, db_id, *args, **kwargs):
+        if db_id not in imgdb_instance.db_spaces:
             raise ImageDBException("attempt to call %s with unknown dbid %d. Have you created it first with createdb() or loaddb()?" %(func.func_name, args[1]))
-        return func(*args, **kwargs)
-    return checkFunc
+        return func(imgdb_instance, db_id, *args, **kwargs)
+    return _wrapper
 
 
 def tail( f, window=20 ):
