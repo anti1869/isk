@@ -30,7 +30,7 @@ from typing import Sequence, List, Tuple
 from isk import utils
 
 try:
-    from isk.imgseeklib import imgdb
+    from isk.backends.imgseeklib import imgdb
 except ImportError:
     logging.error(
         "Unable to load the C++ extension '_imgdb.so(pyd)' module. "
@@ -48,25 +48,32 @@ SUPPORTED_IMG_EXTS = {
 
 
 class DBSpace(object):
+
+    INFO_ATTRS = (
+        "id", "query_count", "last_query_per_min", "query_min_count", "query_min_cur", "last_add_per_min",
+        "add_min_count", "add_min_cur", "add_count", "add_since_last_save", "last_id", "last_save_time",
+        "file_name",
+    )
+
     def __init__(self, id):
-        # statistics
+
+        for attr_name in self.INFO_ATTRS:
+            setattr(self, attr_name, 0)
+
+        # Overload some of them
         self.id = id
-        self.query_count = 0
-        self.last_query_per_min = 0
-        self.query_min_count = 0
-        self.query_min_cur = 0
-        self.last_add_per_min = 0
-        self.add_min_count = 0
-        self.add_min_cur = 0
-        self.add_count = 0
-        self.add_since_last_save = 0
-        self.lastId = 1
-        self.last_save_time = 0
+        self.last_id = 1
         self.file_name = "not yet saved"  # currently loaded data file
 
         if not imgdb.isValidDB(id):  # only init if needed
             logger.debug("New dbSpace requires init: %d" % id)
             imgdb.initDbase(id)
+
+    def get_stats(self):
+        data = {
+            name: getattr(self, name) for name in self.INFO_ATTRS
+        }
+        return data
 
     def __str__(self):
         reprs = "DPSpace ; "
@@ -149,7 +156,7 @@ class ImgDB(object):
         self._settings = settings
 
     @utils.dump_args
-    def createdb(self, db_id):
+    def createdb(self, db_id) -> int:
         if db_id in self.db_spaces:
             logger.warn('Replacing existing database id: %s', str(db_id))
         self.db_spaces[db_id] = DBSpace(db_id)
@@ -162,50 +169,51 @@ class ImgDB(object):
 
     @utils.require_known_db_id
     @utils.dump_args
-    def resetdb(self, dbId):
-        if imgdb.resetdb(dbId):  # succeeded
-            self.db_spaces[dbId] = DBSpace(dbId)
+    def resetdb(self, db_id) -> bool:
+        if imgdb.resetdb(db_id):  # succeeded
+            self.db_spaces[db_id] = DBSpace(db_id)
             logger.debug("resetdb() ok")
-            return 1
-        return 0
+            return True
+        return False
 
     @utils.dump_args
-    def loaddb(self, dbId, fname):
-        if imgdb.resetdb(dbId):
-            logger.warn('Load is replacing existing database id:' + str(dbId))
-        dbSpace = DBSpace(dbId)
-        self.db_spaces[dbId] = dbSpace
+    def loaddb(self, db_id, fname) -> int:
+        if imgdb.resetdb(db_id):
+            logger.warn('Load is replacing existing database id:' + str(db_id))
+        dbSpace = DBSpace(db_id)
+        self.db_spaces[db_id] = dbSpace
         dbSpace.file_name = fname
 
-        if not imgdb.loaddb(dbId, fname):
+        if not imgdb.loaddb(db_id, fname):
             logger.error("Error loading image database")
-            del self.db_spaces[dbId]
+            del self.db_spaces[db_id]
             return None
         # adjust last added image id
         logger.info('| Database loaded: ' + str(dbSpace))
-        dbSpace.lastId = self.get_img_count(dbSpace.id) + 1
-        return dbId
+        dbSpace.last_id = self.get_img_count(dbSpace.id) + 1
+        return db_id
 
     @utils.require_known_db_id
     @utils.dump_args
-    def savedb(self, dbId):
-        return imgdb.savedb(dbId, self.db_spaces[dbId].fileName)
+    def savedb(self, db_id: int) -> bool:
+        result = bool(imgdb.savedb(db_id, self.db_spaces[db_id].file_name))
+        return result
 
     @utils.require_known_db_id
     @utils.dump_args
-    def savedbas(self, dbId, fname):
-        if not imgdb.savedb(dbId, fname):
+    def savedbas(self, db_id: int, fname: str) -> bool:
+        if not imgdb.savedb(db_id, fname):
             logger.error("Error saving image database")
-            return 0
-        else:
-            dbSpace = self.db_spaces[dbId]
-            dbSpace.lastSaveTime = time.time()
-            dbSpace.fileName = fname
-            logger.info('| Database id=%s saved to "%s"' % (dbSpace, fname))
-            return 1
+            return False
+
+        dbSpace = self.db_spaces[db_id]
+        dbSpace.last_save_time = time.time()
+        dbSpace.file_name = fname
+        logger.info('| Database id=%s saved to "%s"' % (dbSpace, fname))
+        return True
 
     @utils.dump_args
-    def loadalldbs(self, fname):
+    def loadalldbs(self, fname) -> int:
         try:
             dbCount = imgdb.loadalldbs(fname)
             for dbid in self.get_db_list():
@@ -219,7 +227,7 @@ class ImgDB(object):
             return 0
 
     @utils.dump_args
-    def savealldbs(self, fname=None):
+    def savealldbs(self, fname=None) -> int:
         if not fname:
             fname = self.globalFileName
         res = imgdb.savealldbs(fname)
@@ -267,9 +275,9 @@ class ImgDB(object):
 
     @utils.require_known_db_id
     @utils.dump_args
-    def remove_db(self, dbId):
-        if imgdb.removedb(dbId):
-            del self.db_spaces[dbId]
+    def remove_db(self, db_id) -> bool:
+        if imgdb.removedb(db_id):
+            del self.db_spaces[db_id]
             return True
         return False
 
@@ -327,26 +335,11 @@ class ImgDB(object):
         # id = long(id)
         return imgdb.removeID(dbId, id)
 
-    def get_db_detailed_list(self):
-        dbids = self.get_db_list()
-        detlist = {}
-        for id in dbids:
-            db_space = self.db_spaces[id]
-            detlist[str(id)] = (
-                self.get_img_count(id),
-                db_space.query_count,
-                db_space.last_query_per_min,
-                db_space.query_min_count,
-                db_space.query_min_cur,
-                db_space.last_add_per_min,
-                db_space.add_min_count,
-                db_space.add_min_cur,
-                db_space.add_count,
-                db_space.add_since_last_save,
-                db_space.last_id,
-                db_space.last_save_time,
-                db_space.file_name,
-            )
+    def get_db_detailed_list(self) -> dict:
+        db_id_list = self.get_db_list()
+        detlist = {
+            db_id: self.db_spaces[db_id].get_stats() for db_id in db_id_list
+        }
         return detlist
 
     @utils.require_known_db_id
@@ -374,17 +367,17 @@ class ImgDB(object):
         return imgdb.getIdsBloomFilter(dbId)
 
     @utils.require_known_db_id
-    def get_img_count(self, dbId):
-        return imgdb.getImgCount(dbId)
+    def get_img_count(self, db_id) -> int:
+        return imgdb.getImgCount(db_id)
 
     @utils.require_known_db_id
     def get_img_id_list(self, dbId):
         return imgdb.getImgIdList(dbId)
 
-    def is_valid_db(self, dbId):
-        return imgdb.isValidDB(dbId)
+    def is_valid_db(self, db_id) -> bool:
+        return imgdb.isValidDB(db_id)
 
-    def get_db_list(self):
+    def get_db_list(self) -> tuple:
         return imgdb.getDBList()
 
     @utils.require_known_db_id

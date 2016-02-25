@@ -30,28 +30,21 @@ import time
 import logging
 import os
 
-import statistics
+from isk import settings, statistics, __version__
+from isk.api.db import img_db
 from isk.urldownloader import urlToFile
-from isk import settings, __version__
+
+logger = logging.getLogger(__name__)
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'  # Whether this module is imported by readthedocs.org builder
 if not on_rtd:  # If so, disable loading any extension modules RTC can't hadle
-    from isk.imgseeklib.imagedb import ImgDB
+    # TODO: Check rtd stuff here
+    pass
+
 
 # Globals
 daemon_start_time = time.time()
 has_shutdown = False
-isk_version = __version__
-db_path = os.path.expanduser(settings.core.get('database', 'databasePath'))
-
-# misc daemon inits
-logger = logging.getLogger(__name__)
-logger.info('+- Initializing isk api (version %s) ...' % isk_version)
-if not on_rtd:  # Again, disable this for RTD builder. All it needs are only docstrings.
-    img_db = ImgDB(settings)
-    img_db.loadalldbs(db_path)
-
-logger.info('| image database initialized')
 
 
 # Common functions for all comm backends
@@ -223,63 +216,6 @@ def add_img(dbId, id, filename, fileIsUrl=False):
     return res
 
 
-def save_db(dbId):
-    """
-    Save the supplied database space if the it has already been saved with a filename (previous call to L{saveDbAs}).
-    B{NOTE}: This operation should be used for exporting single database spaces.
-    For regular server instance database persistance, use L{saveAllDbs} and L{loadAllDbs}.
-
-    :type  dbId: number
-    :param dbId: Database space id.
-    :rtype:   number
-    
-    :since: 0.7
-    :return:  1 in case of success.
-    """        
-    dbId = int(dbId)
-    return img_db.savedb(dbId)
-
-
-def save_db_as(dbId, filename):
-    """
-    Save the supplied database space if the it has already been saved with a filename
-    (subsequent save calls can be made to L{saveDb}).
-
-    :type  dbId: number
-    :param dbId: Database space id.
-    :type  filename: string
-    :param filename: Target filesystem full path of the file where data should be stored at.
-        B{NOTE}: This data file contains a single database space and should be used for import/export purposes only.
-        Do not try to load it with a call to L{loadAllDbs}.
-    :rtype:   number
-    
-    :since: 0.7
-    :return:  1 in case of success.
-    """
-    dbId = int(dbId)
-    return img_db.savedbas(dbId, filename)
-
-
-def load_db(dbId, filename):
-    """
-    Load the supplied single-database-space-dump into a database space of given id.
-    An existing database space with the given id will be completely replaced.
-
-    :type  dbId: number
-    :param dbId: Database space id.
-    :type  filename: string
-    :param filename: Target filesystem full path of the file where data is stored at.
-        B{NOTE}: This data file contains a single database space and should be used for import/export purposes only.
-        Do not try to load it with a call to L{loadAllDbs} and vice versa.
-    :rtype:   number
-    
-    :since: 0.7
-    :return:  dbId in case of success.
-    """    
-    dbId = int(dbId)    
-    return img_db.loaddb(dbId, filename)
-
-
 def remove_img(dbId, id):
     """
     Remove image from database space.
@@ -316,36 +252,6 @@ def remove_img_bulk(dbId, ids):
     return result
 
 
-def reset_db(dbId):
-    """
-    Removes all images from a database space, frees memory, reset statistics.
-
-    :type  dbId: number
-    :param dbId: Database space id.
-    :rtype:   number
-    
-    :since: 0.7
-    :return:  1 in case of success.
-    """    
-    dbId = int(dbId)    
-    return img_db.resetdb(dbId)
-
-
-def create_db(dbId):
-    """
-    Create new db space. Overwrite database space statistics if one with supplied id already exists.
-
-    :type  dbId: number
-    :param dbId: Database space id.
-    :rtype:   number
-    
-    :since: 0.7
-    :return:  dbId in case of success
-    """    
-    dbId = int(dbId)
-    return img_db.createdb(dbId)
-
-
 def shutdown_server():
     """
     Request a shutdown of this server instance.
@@ -368,21 +274,6 @@ def shutdown_server():
     # reactor.callLater(1, reactor.stop)
     has_shutdown = True
     return 1
-
-
-def get_db_img_count(dbId):
-    """
-    Return count of indexed images on database space.
-
-    :type  dbId: number
-    :param dbId: Database space id.
-    :rtype:   number
-    
-    :since: 0.7
-    :return:  image count
-    """    
-    dbId = int(dbId)
-    return img_db.get_img_count(dbId)
 
 
 def is_img_on_db(dbId, id):
@@ -488,18 +379,6 @@ def get_img_avgl(dbId, id):
     return img_db.get_image_avgl(dbId, id1)
 
 
-def get_db_list():
-    """
-    Return list defined database spaces.
-
-    :rtype:   array
-    
-    :since: 0.7
-    :return:  array of db space ids
-    """    
-    return img_db.get_db_list()
-
-
 def get_db_img_id_list(dbId):
     """
     Return list of image ids on database space.
@@ -516,45 +395,6 @@ def get_db_img_id_list(dbId):
     return img_db.get_img_id_list(dbId)
 
 
-def get_db_detailed_list():
-    """
-    Return details for all database spaces.
-
-    :rtype:   map
-    
-    :since: 0.7
-    :return:  map key is database space id (as an integer), associated value is array with [getImgCount,
-                            queryCount,
-                            lastQueryPerMin,
-                            queryMinCount,
-                            queryMinCur,
-                            lastAddPerMin,
-                            addMinCount,
-                            addMinCur,
-                            addCount,
-                            addSinceLastSave,
-                            lastId,
-                            lastSaveTime,
-                            fileName
-                            ]
-    """    
-    
-    return img_db.get_db_detailed_list()
-
-
-def save_all_dbs_as(path):
-    """
-    Persist all existing database spaces.
-
-    :type  path: string
-    :param path: Target filesystem full path of the file where data is stored at.
-    :rtype:   number
-    
-    :since: 0.7
-    :return:  total db spaces written
-    """    
-    
-    return img_db.savealldbs(path)
 
 
 def add_keyword_img(dbId, imgId, hash):
@@ -964,60 +804,6 @@ def add_dir(dbId, path, recurse, fname_as_id=False):
     return img_db.add_dir(dbId, path, recurse, fname_as_id)
 
 
-def load_all_dbs_as(path):
-    """
-    Loads from disk all previously persisted database spaces. (File resulting from a previous call to L{saveAllDbs}).
-
-    :type  path: string
-    :param path: Target filesystem full path of the file where data is stored at.
-    :rtype:   number
-    
-    :since: 0.7
-    :return:  total db spaces read
-    """    
-    
-    return img_db.loadalldbs(path)
-
-
-def save_all_dbs():
-    """
-    Persist all existing database spaces on the data file defined at the config file I{settings.py}
-
-    :rtype:   number
-    
-    :since: 0.7
-    :return:  count of persisted db spaces
-    """
-    
-    return img_db.savealldbs(settings.core.get('database', 'databasePath'))
-
-
-def load_all_dbs():
-    """
-    Loads from disk all previously persisted database spaces on the data file defined at the config file I{settings.py}
-
-    :rtype:   number
-    
-    :since: 0.7
-    :return:  count of persisted db spaces
-    """    
-    
-    return img_db.loadalldbs(settings.core.get('database', 'databasePath'))
-
-
-def remove_db(dbid):
-    """
-    Remove a database. All images associated with it are also removed.
-
-    :rtype:   boolean
-    
-    :since: 0.7
-    :return:  true if succesful
-    """    
-    
-    return img_db.remove_db(dbid)
-
-
 def get_global_server_stats():
     """
     Return the most similar images to the supplied one.
@@ -1041,23 +827,7 @@ def get_global_server_stats():
     return stats
 
 
-def is_valid_db(dbId):
-    """
-    Return whether database space id has already been defined
-
-    :type  dbId: number
-    :param dbId: Database space id.
-    :rtype:   boolean
-    
-    :since: 0.7
-    :return:  True if exists
-    """    
-    
-    dbId = int(dbId)
-    return img_db.is_valid_db(dbId)
-
-
-def get_isk_log(window = 30):
+def get_isk_log(window=30):
     """
     Returns the last lines of text in the iskdaemon instance log
 
@@ -1072,53 +842,41 @@ def get_isk_log(window = 30):
     
     return tail(open(settings.core.get('daemon','logPath')), window)
 
-public = [
-     query_img_id,
-     add_img,
-     save_db,
-     load_db,
-     remove_img,
-     remove_img_bulk,
-     reset_db,
-     remove_db,
-     create_db,
-     get_db_img_count,
-     is_img_on_db,
-     get_img_dimensions,
-     calc_img_avgl_diff,
-     calc_img_diff,
-     get_img_avgl,
-     get_db_list,
-     get_db_detailed_list,
-     get_db_img_id_list,
-     is_valid_db,
-     get_global_server_stats,
-     save_db_as,
-     save_all_dbs,
-     load_all_dbs,
-     save_all_dbs_as,
-     load_all_dbs_as,
-     add_dir,
-     shutdown_server,
-     add_keyword_img,
-     add_keywords_img,
-     add_keyword_img_bulk,
-     remove_keyword_img,
-     remove_all_keyword_img,
-     remove_all_keyword_img_bulk,
-     get_keywords_img,
-     query_img_id_keywords,
-     query_img_id_keywords_bulk,
-     query_img_id_fast_keywords,
-     get_all_imgs_by_keywords,
-     get_keywords_visual_distance,
-     get_keywords_popular,
-     get_cluster_db,
-     get_cluster_keywords,
-     get_ids_bloom_filter,
-     most_popular_keywords,
-     get_isk_log,
-     query_img_blob,
-     query_img_path,
-     add_img_blob,
-]
+exporting = (
+    query_img_id,
+    add_img,
+    remove_img,
+    remove_img_bulk,
+    is_img_on_db,
+    get_img_dimensions,
+    calc_img_avgl_diff,
+    calc_img_diff,
+    get_img_avgl,
+    get_db_img_id_list,
+    add_dir,
+    add_keyword_img,
+    add_keywords_img,
+    add_keyword_img_bulk,
+    remove_keyword_img,
+    remove_all_keyword_img,
+    remove_all_keyword_img_bulk,
+    get_keywords_img,
+    query_img_id_keywords,
+    query_img_id_keywords_bulk,
+    query_img_id_fast_keywords,
+    get_all_imgs_by_keywords,
+    get_keywords_visual_distance,
+    get_keywords_popular,
+    get_ids_bloom_filter,
+    most_popular_keywords,
+    query_img_blob,
+    query_img_path,
+    add_img_blob,
+
+    get_isk_log,
+    get_global_server_stats,
+    shutdown_server,
+
+    get_cluster_db,
+    get_cluster_keywords,
+)
