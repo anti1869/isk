@@ -47,36 +47,29 @@ daemon_start_time = time.time()
 has_shutdown = False
 
 
-# Common functions for all comm backends
-def query_img_id(db_id, id, numres=12, sketch=0, fast=False):
+def query_img_id(db_id: int, image_id: int, numres: int = 12, sketch: bool = False, fast: bool = False) -> tuple:
     """
     Return the most similar images to the supplied one.
     The supplied image must be already indexed, and is referenced by its ID.
 
-    :type  db_id: number
     :param db_id: Database space id.
-    :type  id: number
-    :param id: Target image id.
-    :type  numres: number
+    :param image_id: Target image id.
     :param numres: Number of results to return. The target image is on the result list.
-    :type  sketch: number
-    :param sketch: 0 for photographs, 1 for hand-sketched images or low-resolution vector images.
-    :type fast: boolean
+    :param sketch: False for photographs, True for hand-sketched images or low-resolution vector images.
     :param fast: if true, only the average color for each image is considered.
         Image geometry/features are ignored. Search is faster this way.
-    :rtype:   array
     :since: 0.7
     :change: 0.9.3: added parameter 'sketch'
     :return:  array of arrays: M{[[image id 1, score],[image id 2, score],[image id 3, score], ...]}
         (id is Integer, score is Double)
     """    
-    db_id = int(db_id)
-    id = int(id)
-    numres = int(numres)
 
     # TODO: Removed inefficicent balancer from here. Implement better one
 
-    return backend.query_img_id(db_id, id, numres, sketch, fast)
+    results = backend.query_img_id(db_id, image_id, numres, sketch, fast)
+    result_tuple = tuple(results)
+    return result_tuple
+
 
 
 def query_img_blob(dbId, data, numres=12, sketch=0, fast=False):
@@ -355,22 +348,17 @@ def get_img_avgl(dbId, id):
     return backend.get_image_avgl(dbId, id1)
 
 
-def get_db_img_id_list(dbId):
+def get_db_img_id_list(db_id: int) -> tuple:
     """
     Return list of image ids on database space.
 
-    :type  dbId: number
-    :param dbId: Database space id.
-    :rtype:   array
-    
     :since: 0.7
+    :param db_id: Database space id.
     :return:  array of image ids
     """    
-    
-    dbId = int(dbId)
-    return backend.get_img_id_list(dbId)
 
-
+    result = backend.get_img_id_list(db_id)
+    return result
 
 
 def add_keyword_img(dbId, imgId, hash):

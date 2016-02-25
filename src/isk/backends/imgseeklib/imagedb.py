@@ -25,7 +25,7 @@
 import logging
 import os
 import time
-from typing import Sequence, List, Tuple
+from typing import Sequence, List, Tuple, Iterable
 
 from isk import utils
 
@@ -123,29 +123,6 @@ def count_query(db_space: DBSpace) -> None:
         db_space.last_query_per_min = db_space.query_min_count
     else:
         db_space.query_min_count += 1
-
-
-def normalize_results(results):
-    """Normalize results returned by imgdb """
-
-    res = []
-    for i in range(int(len(results) / 2)):
-        rid = results[i * 2]
-        rsc = results[i * 2 + 1]
-        rsc = -100.0 * rsc / 38.70  # normalize # TODO is this normalization factor still valid?
-        # sanity checks
-        if rsc < 0:
-            rsc = 0.0
-
-        if rsc > 100:
-            rsc = 100.0
-
-        print(1)
-
-        res.append([rid, rsc])
-
-    res.reverse()
-    return res
 
 
 class ImgDB(object):
@@ -371,8 +348,9 @@ class ImgDB(object):
         return imgdb.getImgCount(db_id)
 
     @utils.require_known_db_id
-    def get_img_id_list(self, dbId):
-        return imgdb.getImgIdList(dbId)
+    def get_img_id_list(self, db_id) -> tuple:
+        id_list = imgdb.getImgIdList(db_id)
+        return id_list
 
     def is_valid_db(self, db_id) -> bool:
         return imgdb.isValidDB(db_id)
@@ -437,7 +415,7 @@ class ImgDB(object):
         # do query
         results = imgdb.queryImgIDKeywords(dbId, imgId, numres, kwJoinType, keywords, fast)
 
-        res = normalize_results(results)
+        res = self._normalize_results(results)
 
         logger.debug("queryImgIDKeywords() ret=" + str(res))
         return res
@@ -480,7 +458,7 @@ class ImgDB(object):
         # do query
         results = imgdb.queryImgBlob(dbId, data, numres, sketch, fast)
 
-        res = normalize_results(results)
+        res = self._normalize_results(results)
 
         logger.debug("queryImgBlob() ret=" + str(res))
         return res
@@ -497,24 +475,48 @@ class ImgDB(object):
         # do query
         results = imgdb.queryImgPath(dbId, path, numres, sketch, fast)
 
-        res = normalize_results(results)
+        res = self._normalize_results(results)
 
         logger.debug("queryImgPath() ret=" + str(res))
         return res
 
     @utils.require_known_db_id
     @utils.dump_args
-    def query_img_id(self, db_id: int, image_id: int, numres: int, sketch=0, fast: bool = False) -> List:
+    def query_img_id(self, db_id: int, image_id: int, numres: int, sketch=0, fast: bool = False) -> Iterable:
         db_space = self.db_spaces[db_id]
 
         # return [[resId,resRatio]]
+
         # update internal counters
         numres = int(numres) + 1
         count_query(db_space)
+
         # do query
         results = imgdb.queryImgID(db_id, image_id, numres, sketch, fast)
 
-        res = normalize_results(results)
+        res = self._normalize_results(results)
 
         logger.debug("queryImgID() ret=" + str(res))
+        return res
+
+    def _pairgen(self, results: tuple) -> Iterable:
+        results_iter = reversed(results)
+        for rsc in results_iter:
+            rid = next(results_iter, 0)
+            yield rid, self._norm_rsc(rsc)
+
+    def _norm_rsc(self, rsc):
+        rsc = -100.0 * rsc / 38.70  # normalize # TODO is this normalization factor still valid?
+
+        # sanity checks
+        if rsc < 0:
+            rsc = 0.0
+
+        if rsc > 100:
+            rsc = 100.0
+        return rsc
+
+    def _normalize_results(self, results: tuple) -> Iterable:
+        """Normalize results returned by imgdb """
+        res = self._pairgen(results)
         return res
