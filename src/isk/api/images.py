@@ -31,7 +31,7 @@ import logging
 import os
 
 from isk import settings
-from isk.api.db import backend
+from isk.backends.factory import backend
 from isk.urldownloader import urlToFile
 
 logger = logging.getLogger(__name__)

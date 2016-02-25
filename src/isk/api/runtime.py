@@ -6,7 +6,7 @@ Runtime API
 import time
 
 from isk import settings, statistics
-from isk.api.db import backend
+from isk.backends.factory import backend
 
 
 def get_isk_log(window=30):
