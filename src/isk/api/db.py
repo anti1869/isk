@@ -14,8 +14,8 @@ db_path = os.path.expanduser(settings.core.get('database', 'databasePath'))
 
 logger.info("+- Initializing isk api (version %s) ...", __version__)
 
-img_db = ImgDB(settings)
-img_db.loadalldbs(db_path)
+backend = ImgDB(settings)
+backend.loadalldbs(db_path)
 
 logger.info("| image database initialized")
 logger.info("| using database from %s", db_path)
@@ -31,7 +31,7 @@ def save_db(db_id: int) -> bool:
     :param db_id: Database space id.
     :return:  True in case of success.
     """
-    return img_db.savedb(db_id)
+    return backend.savedb(db_id)
 
 
 def save_db_as(db_id: int, filename: str) -> bool:
@@ -46,7 +46,7 @@ def save_db_as(db_id: int, filename: str) -> bool:
         Do not try to load it with a call to L{loadAllDbs}.
     :return:  1 in case of success.
     """
-    return img_db.savedbas(db_id, filename)
+    return backend.savedbas(db_id, filename)
 
 
 def load_db(db_id: int, filename: str) -> int:
@@ -61,7 +61,7 @@ def load_db(db_id: int, filename: str) -> int:
         Do not try to load it with a call to L{loadAllDbs} and vice versa.
     :return:  dbId in case of success.
     """
-    return img_db.loaddb(db_id, filename)
+    return backend.loaddb(db_id, filename)
 
 
 def reset_db(db_id: int) -> bool:
@@ -72,7 +72,7 @@ def reset_db(db_id: int) -> bool:
     :param db_id: Database space id.
     :return:  True in case of success.
     """
-    return img_db.resetdb(db_id)
+    return backend.resetdb(db_id)
 
 
 def create_db(db_id: int) -> int:
@@ -83,7 +83,7 @@ def create_db(db_id: int) -> int:
     :param db_id: Database space id.
     :return:  dbId in case of success
     """
-    created_id = img_db.createdb(db_id)
+    created_id = backend.createdb(db_id)
     return created_id
 
 
@@ -96,7 +96,7 @@ def get_db_img_count(db_id) -> int:
     :return:  image count
     """
     db_id = int(db_id)
-    return img_db.get_img_count(db_id)
+    return backend.get_img_count(db_id)
 
 
 def get_db_list() -> tuple:
@@ -106,7 +106,7 @@ def get_db_list() -> tuple:
     :since: 0.7
     :return:  array of db space ids
     """
-    return img_db.get_db_list()
+    return backend.get_db_list()
 
 
 def get_db_detailed_list() -> dict:
@@ -116,7 +116,7 @@ def get_db_detailed_list() -> dict:
     :return:  Dict with detailed info about each db space
     """
 
-    return img_db.get_db_detailed_list()
+    return backend.get_db_detailed_list()
 
 
 def save_all_dbs_as(path: str) -> int:
@@ -128,7 +128,7 @@ def save_all_dbs_as(path: str) -> int:
     :return:  total db spaces written
     """
 
-    return img_db.savealldbs(path)
+    return backend.savealldbs(path)
 
 
 def save_all_dbs() -> int:
@@ -139,7 +139,7 @@ def save_all_dbs() -> int:
     :return:  count of persisted db spaces
     """
 
-    return img_db.savealldbs(db_path)
+    return backend.savealldbs(db_path)
 
 
 def load_all_dbs_as(path: str) -> int:
@@ -151,7 +151,7 @@ def load_all_dbs_as(path: str) -> int:
     :return:  total db spaces read
     """
 
-    return img_db.loadalldbs(path)
+    return backend.loadalldbs(path)
 
 
 def load_all_dbs() -> int:
@@ -162,7 +162,7 @@ def load_all_dbs() -> int:
     :return:  count of persisted db spaces
     """
 
-    return img_db.loadalldbs(db_path)
+    return backend.loadalldbs(db_path)
 
 
 def remove_db(db_id: int) -> bool:
@@ -174,7 +174,7 @@ def remove_db(db_id: int) -> bool:
     :return:  True if succesful
     """
 
-    return img_db.remove_db(db_id)
+    return backend.remove_db(db_id)
 
 
 def is_valid_db(db_id: int) -> bool:
@@ -186,7 +186,7 @@ def is_valid_db(db_id: int) -> bool:
     :return:  True if exists
     """
 
-    return img_db.is_valid_db(db_id)
+    return backend.is_valid_db(db_id)
 
 
 exporting = (

@@ -30,8 +30,8 @@ import time
 import logging
 import os
 
-from isk import settings, statistics, __version__
-from isk.api.db import img_db
+from isk import settings
+from isk.api.db import backend
 from isk.urldownloader import urlToFile
 
 logger = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ def query_img_id(db_id, id, numres=12, sketch=0, fast=False):
 
     # TODO: Removed inefficicent balancer from here. Implement better one
 
-    return img_db.query_img_id(db_id, id, numres, sketch, fast)
+    return backend.query_img_id(db_id, id, numres, sketch, fast)
 
 
 def query_img_blob(dbId, data, numres=12, sketch=0, fast=False):
@@ -105,7 +105,7 @@ def query_img_blob(dbId, data, numres=12, sketch=0, fast=False):
     dbId = int(dbId)
     numres = int(numres)
     
-    return img_db.query_img_blob(dbId, data.data, numres, sketch, fast)
+    return backend.query_img_blob(dbId, data.data, numres, sketch, fast)
 
 
 def query_img_path(dbId, path, numres=12, sketch=0, fast=False):
@@ -133,7 +133,7 @@ def query_img_path(dbId, path, numres=12, sketch=0, fast=False):
     dbId = int(dbId)
     numres = int(numres)
     
-    return img_db.query_img_path(dbId, path, numres, sketch, fast)
+    return backend.query_img_path(dbId, path, numres, sketch, fast)
 
 
 def add_img_blob(dbId, id, data):
@@ -157,7 +157,7 @@ def add_img_blob(dbId, id, data):
 
     try:
         # TODO id should be unsigned long int or something even bigger, also must review swig declarations
-        res = img_db.add_image_blob(dbId, data.data, id)
+        res = backend.add_image_blob(dbId, data.data, id)
     except Exception as e:
         if str(e) == 'image already in db':
             logger.warn(e)
@@ -203,7 +203,7 @@ def add_img(dbId, id, filename, fileIsUrl=False):
     res = 0
     try:
         #TODO id should be unsigned long int or something even bigger, also must review swig declarations
-        res = img_db.add_image(dbId, filename, id)
+        res = backend.add_image(dbId, filename, id)
     except Exception as e:
         if str(e) == 'image already in db':
             logger.warn(e)
@@ -231,7 +231,7 @@ def remove_img(dbId, id):
     """    
     id = int(id)
     dbId = int(dbId)    
-    return img_db.remove_img(dbId, id)
+    return backend.remove_img(dbId, id)
 
 
 def remove_img_bulk(dbId, ids):
@@ -252,30 +252,6 @@ def remove_img_bulk(dbId, ids):
     return result
 
 
-def shutdown_server():
-    """
-    Request a shutdown of this server instance.
-
-    :rtype:   number
-    
-    :since: 0.7
-    :return:  always M{1}
-    """
-    global has_shutdown
-
-    if has_shutdown: return 1 # already went through a shutdown
-    
-    if settings.core.getboolean('daemon','saveAllOnShutdown'):
-            save_all_dbs()
-            img_db.closedb()
-
-    logger.info("Shuting instance down...")
-    # from twisted.internet import reactor
-    # reactor.callLater(1, reactor.stop)
-    has_shutdown = True
-    return 1
-
-
 def is_img_on_db(dbId, id):
     """
     Return whether image id exists on database space.
@@ -291,7 +267,7 @@ def is_img_on_db(dbId, id):
     """    
     dbId = int(dbId)
     id = int(id)
-    return img_db.is_image_on_db(dbId, id)
+    return backend.is_image_on_db(dbId, id)
 
 
 def get_img_dimensions(dbId, id):
@@ -309,7 +285,7 @@ def get_img_dimensions(dbId, id):
     """    
     dbId = int(dbId)
     id = int(id)
-    return img_db.get_image_dimensions(dbId, id)
+    return backend.get_image_dimensions(dbId, id)
 
 
 def calc_img_avgl_diff(dbId, id1, id2):
@@ -330,7 +306,7 @@ def calc_img_avgl_diff(dbId, id1, id2):
     dbId = int(dbId)
     id1 = int(id1)
     id2 = int(id2)
-    return img_db.calc_avgl_diff(dbId, id1, id2)
+    return backend.calc_avgl_diff(dbId, id1, id2)
 
 
 def calc_img_diff(dbId, id1, id2):
@@ -358,7 +334,7 @@ def calc_img_diff(dbId, id1, id2):
     id1 = int(id1)
     id2 = int(id2)
     
-    return img_db.calc_diff(dbId, id1, id2)
+    return backend.calc_diff(dbId, id1, id2)
 
 
 def get_img_avgl(dbId, id):
@@ -376,7 +352,7 @@ def get_img_avgl(dbId, id):
     """    
     dbId = int(dbId)
     id1 = int(id)
-    return img_db.get_image_avgl(dbId, id1)
+    return backend.get_image_avgl(dbId, id1)
 
 
 def get_db_img_id_list(dbId):
@@ -392,7 +368,7 @@ def get_db_img_id_list(dbId):
     """    
     
     dbId = int(dbId)
-    return img_db.get_img_id_list(dbId)
+    return backend.get_img_id_list(dbId)
 
 
 
@@ -414,7 +390,7 @@ def add_keyword_img(dbId, imgId, hash):
     """
     dbId = int(dbId)
     imgId = int(imgId)
-    return img_db.add_keyword_img(dbId, imgId, hash)
+    return backend.add_keyword_img(dbId, imgId, hash)
 
 
 def add_keyword_img_bulk(dbId, data):
@@ -471,7 +447,7 @@ def get_ids_bloom_filter(dbId):
     :return:  bloom filter containing all images on given db id.
     """
     dbId = int(dbId)
-    return img_db.getIdsBloomFilter(dbId)
+    return backend.getIdsBloomFilter(dbId)
 
 
 def get_cluster_keywords(dbId, numClusters, keywords):
@@ -486,7 +462,7 @@ def get_cluster_keywords(dbId, numClusters, keywords):
     :return:  true if image id exists
     """    
     dbId = int(dbId)
-    return img_db.get_cluster_keywords(dbId, numClusters, keywords)
+    return backend.get_cluster_keywords(dbId, numClusters, keywords)
 
 
 def get_cluster_db(dbId, numClusters):
@@ -501,7 +477,7 @@ def get_cluster_db(dbId, numClusters):
     :return:  true if image id exists
     """    
     dbId = int(dbId)
-    return img_db.get_cluster_db(dbId, numClusters)
+    return backend.get_cluster_db(dbId, numClusters)
 
 
 def get_keywords_popular(dbId, numres):
@@ -516,7 +492,7 @@ def get_keywords_popular(dbId, numres):
     :return:  true if image id exists
     """    
     dbId = int(dbId)
-    return img_db.get_keywords_popular(dbId, numres)
+    return backend.get_keywords_popular(dbId, numres)
 
 
 def get_keywords_visual_distance(dbId, distanceType, keywords):
@@ -531,7 +507,7 @@ def get_keywords_visual_distance(dbId, distanceType, keywords):
     :return:  true if image id exists
     """    
     dbId = int(dbId)
-    return img_db.get_keywords_visual_distance(dbId, distanceType, keywords)
+    return backend.get_keywords_visual_distance(dbId, distanceType, keywords)
 
 
 def get_all_imgs_by_keywords(dbId, numres, kwJoinType, keywords):
@@ -556,7 +532,7 @@ def get_all_imgs_by_keywords(dbId, numres, kwJoinType, keywords):
     if len(keywordIds) == 0:
         keywordIds=[0]
     
-    return img_db.get_all_imgs_by_keywords(dbId, numres, kwJoinType, keywordIds)
+    return backend.get_all_imgs_by_keywords(dbId, numres, kwJoinType, keywordIds)
 
 
 def query_img_id_fast_keywords(dbId, imgId, numres, kwJoinType, keywords):
@@ -582,7 +558,7 @@ def query_img_id_fast_keywords(dbId, imgId, numres, kwJoinType, keywords):
     dbId = int(dbId)
     imgId = int(imgId)
     keywordIds = [int(x) for x in keywords.split(',') if len(x) > 0]
-    return img_db.query_img_id_fast_keywords(dbId, imgId, numres, kwJoinType, keywords)
+    return backend.query_img_id_fast_keywords(dbId, imgId, numres, kwJoinType, keywords)
 
 
 def query_img_id_keywords(dbId, imgId, numres, kwJoinType, keywords):
@@ -609,7 +585,7 @@ def query_img_id_keywords(dbId, imgId, numres, kwJoinType, keywords):
     dbId = int(dbId)
     imgId = int(imgId)
     keywordIds = [int(x) for x in keywords.split(',') if len(x) > 0]
-    return img_db.query_img_id_keywords(dbId, imgId, numres, kwJoinType, keywordIds)
+    return backend.query_img_id_keywords(dbId, imgId, numres, kwJoinType, keywordIds)
 
 
 def query_img_id_keywords_bulk(dbId, imgKwList, numres, kwJoinType):
@@ -674,7 +650,7 @@ def most_popular_keywords(dbId, imgs, excludedKwds, count, mode):
     excludedKwds = [int(x) for x in excludedKwds.split(',') if len(x) > 0]
     imgs = [int(x) for x in imgs.split(',') if len(x) > 0]
     
-    return img_db.most_popular_keywords(dbId, imgs, excludedKwds, count, mode)
+    return backend.most_popular_keywords(dbId, imgs, excludedKwds, count, mode)
 
 
 def get_keywords_img(dbId, imgId):
@@ -692,7 +668,7 @@ def get_keywords_img(dbId, imgId):
     """    
     dbId = int(dbId)
     imgId = int(imgId)
-    return img_db.get_keywords_img(dbId, imgId)
+    return backend.get_keywords_img(dbId, imgId)
 
 
 def remove_all_keyword_img(dbId, imgId):
@@ -713,7 +689,7 @@ def remove_all_keyword_img(dbId, imgId):
     """    
     dbId = int(dbId)
     imgId = int(imgId)
-    return img_db.remove_all_keywords_img(dbId, imgId)
+    return backend.remove_all_keywords_img(dbId, imgId)
 
 
 def remove_all_keyword_img_bulk(dbId, imgIdList):
@@ -759,7 +735,7 @@ def remove_keyword_img(dbId, imgId, hash):
     """    
     dbId = int(dbId)
     imgId = int(imgId)
-    return img_db.remove_keyword_img(dbId, imgId, hash)
+    return backend.remove_keyword_img(dbId, imgId, hash)
 
 
 def add_keywords_img(dbId, imgId, hashes):
@@ -779,7 +755,7 @@ def add_keywords_img(dbId, imgId, hashes):
     """    
     dbId = int(dbId)
     imgId = int(imgId)
-    return img_db.add_keywords_img(dbId, imgId, hashes)
+    return backend.add_keywords_img(dbId, imgId, hashes)
 
 
 def add_dir(dbId, path, recurse, fname_as_id=False):
@@ -801,46 +777,8 @@ def add_dir(dbId, path, recurse, fname_as_id=False):
     """    
     
     dbId = int(dbId)
-    return img_db.add_dir(dbId, path, recurse, fname_as_id)
+    return backend.add_dir(dbId, path, recurse, fname_as_id)
 
-
-def get_global_server_stats():
-    """
-    Return the most similar images to the supplied one.
-
-    :rtype:   map
-    
-    :since: 0.7
-    :return:  key is stat name, value is value.
-        Keys are ['isk-daemon uptime', 'Number of databases', 'Total memory usage', 'Resident memory usage',
-        'Stack memory usage']
-    """    
-    
-    stats = {}
-    
-    stats['isk-daemon uptime'] = statistics.human_readable(time.time() - daemon_start_time)
-    stats['Number of databases'] = len(img_db.get_db_list())
-    stats['Total memory usage'] = statistics.memory()
-    stats['Resident memory usage'] = statistics.resident()
-    stats['Stack memory usage'] = statistics.stacksize()    
-    
-    return stats
-
-
-def get_isk_log(window=30):
-    """
-    Returns the last lines of text in the iskdaemon instance log
-
-    :type  window: number
-    :param window: number of lines to retrieve 
-
-    :rtype:   string
-    :return:  text block
-    :since: 0.9.3
-    """
-    from isk.utils import tail
-    
-    return tail(open(settings.core.get('daemon','logPath')), window)
 
 exporting = (
     query_img_id,
@@ -872,10 +810,6 @@ exporting = (
     query_img_blob,
     query_img_path,
     add_img_blob,
-
-    get_isk_log,
-    get_global_server_stats,
-    shutdown_server,
 
     get_cluster_db,
     get_cluster_keywords,
