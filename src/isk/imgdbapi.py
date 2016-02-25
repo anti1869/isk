@@ -85,9 +85,12 @@ def query_img_id(db_id, id, numres=12, sketch=0, fast=False):
 
     return img_db.query_img_id(db_id, id, numres, sketch, fast)
 
-def queryImgBlob(dbId, data, numres=12, sketch=0, fast=False):
+
+def query_img_blob(dbId, data, numres=12, sketch=0, fast=False):
     """
-    Return the most similar images to the supplied one. The target image is specified by its raw binary file data. Most common formats are supported.
+    Return the most similar images to the supplied one.
+    The target image is specified by its raw binary file data.
+    Most common formats are supported.
 
     :type  dbId: number
     :param dbId: Database space id.
@@ -98,20 +101,24 @@ def queryImgBlob(dbId, data, numres=12, sketch=0, fast=False):
     :type  sketch: number
     :param sketch: 0 for photographs, 1 for hand-sketched images or low-resolution vector images. 
     :type fast: boolean
-    :param fast: if true, only the average color for each image is considered. Image geometry/features are ignored. Search is faster this way.
+    :param fast: if true, only the average color for each image is considered. Image geometry/features are ignored.
+        Search is faster this way.
     :rtype:   array
     
     :since: 0.9.3
-    :return:  array of arrays: M{[[image id 1, score],[image id 2, score],[image id 3, score], ...]} (id is Integer, score is Double)
+    :return:  array of arrays: M{[[image id 1, score],[image id 2, score],[image id 3, score], ...]}
+        (id is Integer, score is Double)
     """    
     dbId = int(dbId)
     numres = int(numres)
     
     return img_db.query_img_blob(dbId, data.data, numres, sketch, fast)
 
-def queryImgPath(dbId, path, numres=12, sketch=0, fast=False):
+
+def query_img_path(dbId, path, numres=12, sketch=0, fast=False):
     """
-    Return the most similar images to the supplied one. The target image is specified using it's full path on the server filesystem.
+    Return the most similar images to the supplied one.
+    The target image is specified using it's full path on the server filesystem.
 
     :type  dbId: number
     :param dbId: Database space id.
@@ -122,25 +129,29 @@ def queryImgPath(dbId, path, numres=12, sketch=0, fast=False):
     :type  sketch: number
     :param sketch: 0 for photographs, 1 for hand-sketched images or low-resolution vector images. 
     :type fast: boolean
-    :param fast: if true, only the average color for each image is considered. Image geometry/features are ignored. Search is faster this way.
+    :param fast: if true, only the average color for each image is considered. Image geometry/features are ignored.
+        Search is faster this way.
     :rtype:   array
     
     :since: 0.9.3
-    :return:  array of arrays: M{[[image id 1, score],[image id 2, score],[image id 3, score], ...]} (id is Integer, score is Double)
+    :return:  array of arrays: M{[[image id 1, score],[image id 2, score],[image id 3, score], ...]}
+        (id is Integer, score is Double)
     """    
     dbId = int(dbId)
     numres = int(numres)
     
     return img_db.query_img_path(dbId, path, numres, sketch, fast)
 
-def addImgBlob(dbId, id, data):
+
+def add_img_blob(dbId, id, data):
     """
     Add image to database space. Image data is passed directly. It is then processed and indexed. 
 
     :type  dbId: number
     :param dbId: Database space id.
     :type  id: number
-    :param id: Target image id. The image located on filename will be indexed and from now on should be refered to isk-daemon as this supplied id.
+    :param id: Target image id. The image located on filename will be indexed and from now on should be refered
+        to isk-daemon as this supplied id.
     :type  data: binary 
     :param data: Image binary data
     :rtype:   number
@@ -152,7 +163,7 @@ def addImgBlob(dbId, id, data):
     id = int(id)
 
     try:
-        #TODO id should be unsigned long int or something even bigger, also must review swig declarations
+        # TODO id should be unsigned long int or something even bigger, also must review swig declarations
         res = img_db.add_image_blob(dbId, data.data, id)
     except Exception as e:
         if str(e) == 'image already in db':
@@ -163,18 +174,27 @@ def addImgBlob(dbId, id, data):
     
     return res
 
-def addImg(dbId, id, filename, fileIsUrl=False):
+
+def add_img(dbId, id, filename, fileIsUrl=False):
     """
-    Add image to database space. Image file is read, processed and indexed. After this indexing is done, image can be removed from file system.
+    Add image to database space. Image file is read, processed and indexed.
+    After this indexing is done, image can be removed from file system.
 
     :type  dbId: number
     :param dbId: Database space id.
     :type  id: number
-    :param id: Target image id. The image located on filename will be indexed and from now on should be refered to isk-daemon as this supplied id.
+    :param id: Target image id. The image located on filename will be indexed and from now on should be
+        refered to isk-daemon as this supplied id.
     :type  filename: string
-    :param filename: Physical full file path for the image to be indexed. Should be in one of the supported formats ('jpeg', 'jpg', 'gif', 'png', 'rgb', 'pbm', 'pgm', 'ppm', 'tiff', 'tif', 'rast', 'xbm', 'bmp'). For better results image should have dimension of at least 128x128. Thumbnails are ok. Bigger images will be scaled down to 128x128.
+    :param filename: Physical full file path for the image to be indexed.
+        Should be in one of the supported formats
+        ('jpeg', 'jpg', 'gif', 'png', 'rgb', 'pbm', 'pgm', 'ppm', 'tiff', 'tif', 'rast', 'xbm', 'bmp').
+        For better results image should have dimension of at least 128x128. Thumbnails are ok.
+        Bigger images will be scaled down to 128x128.
     :type  fileIsUrl: boolean
-    :param fileIsUrl: if true, filename is interpreted as an HTTP url and the remote image it points to downloaded and saved to a temporary location (same directory where database file is) before being added to database.
+    :param fileIsUrl: if true, filename is interpreted as an HTTP url and the remote image
+        it points to downloaded and saved to a temporary location (same directory where database file is)
+        before being added to database.
     :rtype:   number
     
     :since: 0.7
@@ -202,10 +222,12 @@ def addImg(dbId, id, filename, fileIsUrl=False):
     
     return res
 
-def saveDb(dbId):
+
+def save_db(dbId):
     """
     Save the supplied database space if the it has already been saved with a filename (previous call to L{saveDbAs}).
-    B{NOTE}: This operation should be used for exporting single database spaces. For regular server instance database persistance, use L{saveAllDbs} and L{loadAllDbs}.
+    B{NOTE}: This operation should be used for exporting single database spaces.
+    For regular server instance database persistance, use L{saveAllDbs} and L{loadAllDbs}.
 
     :type  dbId: number
     :param dbId: Database space id.
@@ -217,14 +239,18 @@ def saveDb(dbId):
     dbId = int(dbId)
     return img_db.savedb(dbId)
 
-def saveDbAs(dbId, filename):
+
+def save_db_as(dbId, filename):
     """
-    Save the supplied database space if the it has already been saved with a filename (subsequent save calls can be made to L{saveDb}).
+    Save the supplied database space if the it has already been saved with a filename
+    (subsequent save calls can be made to L{saveDb}).
 
     :type  dbId: number
     :param dbId: Database space id.
     :type  filename: string
-    :param filename: Target filesystem full path of the file where data should be stored at. B{NOTE}: This data file contains a single database space and should be used for import/export purposes only. Do not try to load it with a call to L{loadAllDbs}.
+    :param filename: Target filesystem full path of the file where data should be stored at.
+        B{NOTE}: This data file contains a single database space and should be used for import/export purposes only.
+        Do not try to load it with a call to L{loadAllDbs}.
     :rtype:   number
     
     :since: 0.7
@@ -233,14 +259,18 @@ def saveDbAs(dbId, filename):
     dbId = int(dbId)
     return img_db.savedbas(dbId, filename)
 
-def loadDb(dbId, filename):
+
+def load_db(dbId, filename):
     """
-    Load the supplied single-database-space-dump into a database space of given id. An existing database space with the given id will be completely replaced.
+    Load the supplied single-database-space-dump into a database space of given id.
+    An existing database space with the given id will be completely replaced.
 
     :type  dbId: number
     :param dbId: Database space id.
     :type  filename: string
-    :param filename: Target filesystem full path of the file where data is stored at. B{NOTE}: This data file contains a single database space and should be used for import/export purposes only. Do not try to load it with a call to L{loadAllDbs} and vice versa.
+    :param filename: Target filesystem full path of the file where data is stored at.
+        B{NOTE}: This data file contains a single database space and should be used for import/export purposes only.
+        Do not try to load it with a call to L{loadAllDbs} and vice versa.
     :rtype:   number
     
     :since: 0.7
@@ -250,7 +280,7 @@ def loadDb(dbId, filename):
     return img_db.loaddb(dbId, filename)
 
 
-def removeImg(dbId, id):
+def remove_img(dbId, id):
     """
     Remove image from database space.
 
@@ -268,7 +298,7 @@ def removeImg(dbId, id):
     return img_db.remove_img(dbId, id)
 
 
-def removeImgBulk(dbId, ids):
+def remove_img_bulk(dbId, ids):
     """
     Neat shortcut to remove whole bunch of images from database.
 
@@ -282,11 +312,11 @@ def removeImgBulk(dbId, ids):
     """
     result = True
     for image_id in ids:
-        result &= removeImg(dbId, image_id)
+        result &= remove_img(dbId, image_id)
     return result
 
 
-def resetDb(dbId):
+def reset_db(dbId):
     """
     Removes all images from a database space, frees memory, reset statistics.
 
@@ -300,7 +330,8 @@ def resetDb(dbId):
     dbId = int(dbId)    
     return img_db.resetdb(dbId)
 
-def createDb(dbId):
+
+def create_db(dbId):
     """
     Create new db space. Overwrite database space statistics if one with supplied id already exists.
 
@@ -313,8 +344,9 @@ def createDb(dbId):
     """    
     dbId = int(dbId)
     return img_db.createdb(dbId)
-    
-def shutdownServer():
+
+
+def shutdown_server():
     """
     Request a shutdown of this server instance.
 
@@ -328,7 +360,7 @@ def shutdownServer():
     if has_shutdown: return 1 # already went through a shutdown
     
     if settings.core.getboolean('daemon','saveAllOnShutdown'):
-            saveAllDbs()
+            save_all_dbs()
             img_db.closedb()
 
     logger.info("Shuting instance down...")
@@ -337,7 +369,8 @@ def shutdownServer():
     has_shutdown = True
     return 1
 
-def getDbImgCount(dbId):
+
+def get_db_img_count(dbId):
     """
     Return count of indexed images on database space.
 
@@ -351,7 +384,8 @@ def getDbImgCount(dbId):
     dbId = int(dbId)
     return img_db.get_img_count(dbId)
 
-def isImgOnDb(dbId, id):
+
+def is_img_on_db(dbId, id):
     """
     Return whether image id exists on database space.
 
@@ -368,7 +402,8 @@ def isImgOnDb(dbId, id):
     id = int(id)
     return img_db.is_image_on_db(dbId, id)
 
-def getImgDimensions(dbId, id):
+
+def get_img_dimensions(dbId, id):
     """
     Returns image original dimensions when indexed into database.
 
@@ -385,7 +420,8 @@ def getImgDimensions(dbId, id):
     id = int(id)
     return img_db.get_image_dimensions(dbId, id)
 
-def calcImgAvglDiff(dbId, id1, id2):
+
+def calc_img_avgl_diff(dbId, id1, id2):
     """
     Return average luminance (over three color channels) difference ratio
 
@@ -405,11 +441,14 @@ def calcImgAvglDiff(dbId, id1, id2):
     id2 = int(id2)
     return img_db.calc_avgl_diff(dbId, id1, id2)
 
-def calcImgDiff(dbId, id1,  id2):
+
+def calc_img_diff(dbId, id1, id2):
     """
-    Return image similarity difference ratio. One value alone for an image pair doesn't mean much. These values should be compared pairwise against each other. 
+    Return image similarity difference ratio. One value alone for an image pair doesn't mean much.
+    These values should be compared pairwise against each other.
     
-    The smaller the value between two images is (i.e. the more negative the value is), the more similar the 2 images are.
+    The smaller the value between two images is (i.e. the more negative the value is),
+    the more similar the 2 images are.
 
     Comparing one image against itself is a degenerate case and the value returned should be ignored.
 
@@ -430,7 +469,8 @@ def calcImgDiff(dbId, id1,  id2):
     
     return img_db.calc_diff(dbId, id1, id2)
 
-def getImgAvgl(dbId, id):
+
+def get_img_avgl(dbId, id):
     """
     Return image average color levels on the three color channels (YIQ color system)
 
@@ -447,7 +487,8 @@ def getImgAvgl(dbId, id):
     id1 = int(id)
     return img_db.get_image_avgl(dbId, id1)
 
-def getDbList():
+
+def get_db_list():
     """
     Return list defined database spaces.
 
@@ -458,7 +499,8 @@ def getDbList():
     """    
     return img_db.get_db_list()
 
-def getDbImgIdList(dbId):
+
+def get_db_img_id_list(dbId):
     """
     Return list of image ids on database space.
 
@@ -473,7 +515,8 @@ def getDbImgIdList(dbId):
     dbId = int(dbId)
     return img_db.get_img_id_list(dbId)
 
-def getDbDetailedList():
+
+def get_db_detailed_list():
     """
     Return details for all database spaces.
 
@@ -498,7 +541,8 @@ def getDbDetailedList():
     
     return img_db.get_db_detailed_list()
 
-def saveAllDbsAs(path):
+
+def save_all_dbs_as(path):
     """
     Persist all existing database spaces.
 
@@ -513,7 +557,7 @@ def saveAllDbsAs(path):
     return img_db.savealldbs(path)
 
 
-def addKeywordImg(dbId, imgId, hash):
+def add_keyword_img(dbId, imgId, hash):
     """
     Adds a keyword to an image.
 
@@ -533,7 +577,7 @@ def addKeywordImg(dbId, imgId, hash):
     return img_db.add_keyword_img(dbId, imgId, hash)
 
 
-def addKeywordImgBulk(dbId, data):
+def add_keyword_img_bulk(dbId, data):
     """
     Adds keywords to images in a bulk. You pass data as dict when keywords as keys and list of image id as values::
 
@@ -570,12 +614,12 @@ def addKeywordImgBulk(dbId, data):
                 result &= False
                 continue
 
-            result &= addKeywordImg(dbId, img_id, keyword_id)
+            result &= add_keyword_img(dbId, img_id, keyword_id)
 
     return bool(result)
 
 
-def getIdsBloomFilter(dbId):
+def get_ids_bloom_filter(dbId):
     """
     Return bloom filter containing all images on given db id.
 
@@ -589,7 +633,8 @@ def getIdsBloomFilter(dbId):
     dbId = int(dbId)
     return img_db.getIdsBloomFilter(dbId)
 
-def getClusterKeywords(dbId, numClusters,keywords):
+
+def get_cluster_keywords(dbId, numClusters, keywords):
     """
     Return whether image id exists on database space.
 
@@ -603,7 +648,8 @@ def getClusterKeywords(dbId, numClusters,keywords):
     dbId = int(dbId)
     return img_db.get_cluster_keywords(dbId, numClusters, keywords)
 
-def getClusterDb(dbId, numClusters):
+
+def get_cluster_db(dbId, numClusters):
     """
     Return whether image id exists on database space.
 
@@ -617,7 +663,8 @@ def getClusterDb(dbId, numClusters):
     dbId = int(dbId)
     return img_db.get_cluster_db(dbId, numClusters)
 
-def getKeywordsPopular(dbId, numres):
+
+def get_keywords_popular(dbId, numres):
     """
     Return whether image id exists on database space.
 
@@ -631,7 +678,8 @@ def getKeywordsPopular(dbId, numres):
     dbId = int(dbId)
     return img_db.get_keywords_popular(dbId, numres)
 
-def getKeywordsVisualDistance(dbId, distanceType,  keywords):
+
+def get_keywords_visual_distance(dbId, distanceType, keywords):
     """
     Return whether image id exists on database space.
 
@@ -645,7 +693,8 @@ def getKeywordsVisualDistance(dbId, distanceType,  keywords):
     dbId = int(dbId)
     return img_db.get_keywords_visual_distance(dbId, distanceType, keywords)
 
-def getAllImgsByKeywords(dbId, numres, kwJoinType, keywords):
+
+def get_all_imgs_by_keywords(dbId, numres, kwJoinType, keywords):
     """
     Return all images with the given keywords
 
@@ -669,7 +718,8 @@ def getAllImgsByKeywords(dbId, numres, kwJoinType, keywords):
     
     return img_db.get_all_imgs_by_keywords(dbId, numres, kwJoinType, keywordIds)
 
-def queryImgIDFastKeywords(dbId, imgId, numres, kwJoinType, keywords):
+
+def query_img_id_fast_keywords(dbId, imgId, numres, kwJoinType, keywords):
     """
     Fast query (only considers average color) for similar images considering keywords
 
@@ -686,14 +736,16 @@ def queryImgIDFastKeywords(dbId, imgId, numres, kwJoinType, keywords):
     :rtype:   array
     
     :since: 0.7
-    :return:  array of arrays: M{[[image id 1, score],[image id 2, score],[image id 3, score], ...]} (id is Integer, score is Double)
+    :return:  array of arrays: M{[[image id 1, score],[image id 2, score],[image id 3, score], ...]}
+        (id is Integer, score is Double)
     """    
     dbId = int(dbId)
     imgId = int(imgId)
     keywordIds = [int(x) for x in keywords.split(',') if len(x) > 0]
     return img_db.query_img_id_fast_keywords(dbId, imgId, numres, kwJoinType, keywords)
 
-def queryImgIDKeywords(dbId, imgId, numres, kwJoinType, keywords):
+
+def query_img_id_keywords(dbId, imgId, numres, kwJoinType, keywords):
     """
     Query for similar images considering keywords. The input keywords are used for narrowing the
     search space.
@@ -711,7 +763,8 @@ def queryImgIDKeywords(dbId, imgId, numres, kwJoinType, keywords):
     :rtype:   array
     
     :since: 0.7
-    :return:  array of arrays: M{[[image id 1, score],[image id 2, score],[image id 3, score], ...]} (id is Integer, score is Double)
+    :return:  array of arrays: M{[[image id 1, score],[image id 2, score],[image id 3, score], ...]}
+        (id is Integer, score is Double)
     """    
     dbId = int(dbId)
     imgId = int(imgId)
@@ -719,7 +772,7 @@ def queryImgIDKeywords(dbId, imgId, numres, kwJoinType, keywords):
     return img_db.query_img_id_keywords(dbId, imgId, numres, kwJoinType, keywordIds)
 
 
-def queryImgIDKeywordsBulk(dbId, imgKwList, numres, kwJoinType):
+def query_img_id_keywords_bulk(dbId, imgKwList, numres, kwJoinType):
     """
     Shortcut for querying for similar images considering keywords in bulk. You pass list of tuples::
 
@@ -752,13 +805,13 @@ def queryImgIDKeywordsBulk(dbId, imgKwList, numres, kwJoinType):
 
     total_results = []
     for image_id, keywords in imgKwList:
-        query_result = queryImgIDKeywords(dbId, image_id, numres, kwJoinType, keywords)
+        query_result = query_img_id_keywords(dbId, image_id, numres, kwJoinType, keywords)
         total_results.append((image_id, query_result))
 
     return total_results
 
 
-def mostPopularKeywords(dbId, imgs, excludedKwds, count, mode):
+def most_popular_keywords(dbId, imgs, excludedKwds, count, mode):
     """
     Returns the most frequent keywords associated with a given set of images 
 
@@ -783,7 +836,8 @@ def mostPopularKeywords(dbId, imgs, excludedKwds, count, mode):
     
     return img_db.most_popular_keywords(dbId, imgs, excludedKwds, count, mode)
 
-def getKeywordsImg(dbId, imgId):
+
+def get_keywords_img(dbId, imgId):
     """
     Returns all keywords currently associated with an image.
 
@@ -800,7 +854,8 @@ def getKeywordsImg(dbId, imgId):
     imgId = int(imgId)
     return img_db.get_keywords_img(dbId, imgId)
 
-def removeAllKeywordImg(dbId, imgId):
+
+def remove_all_keyword_img(dbId, imgId):
     """
     Remove all keyword associations this image has.
     
@@ -821,7 +876,7 @@ def removeAllKeywordImg(dbId, imgId):
     return img_db.remove_all_keywords_img(dbId, imgId)
 
 
-def removeAllKeywordImgBulk(dbId, imgIdList):
+def remove_all_keyword_img_bulk(dbId, imgIdList):
     """
     Remove all keyword associations for all images in list.
 
@@ -839,15 +894,17 @@ def removeAllKeywordImgBulk(dbId, imgIdList):
     """
     result = True
     for img_id in imgIdList:
-        result &= removeAllKeywordImg(dbId, img_id)
+        result &= remove_all_keyword_img(dbId, img_id)
 
     return result
 
-def removeKeywordImg(dbId, imgId, hash):
+
+def remove_keyword_img(dbId, imgId, hash):
     """
     Remove the association of a keyword to an image
     
-    Known issue: keyword based queries will continue to consider the image to be associated to this keyword until the database is saved and restored.    
+    Known issue: keyword based queries will continue to consider the image to be associated to this
+    keyword until the database is saved and restored.
 
     :type  dbId: number
     :param dbId: Database space id.
@@ -864,7 +921,8 @@ def removeKeywordImg(dbId, imgId, hash):
     imgId = int(imgId)
     return img_db.remove_keyword_img(dbId, imgId, hash)
 
-def addKeywordsImg(dbId, imgId, hashes):
+
+def add_keywords_img(dbId, imgId, hashes):
     """
     Associate keywords to image
 
@@ -883,7 +941,8 @@ def addKeywordsImg(dbId, imgId, hashes):
     imgId = int(imgId)
     return img_db.add_keywords_img(dbId, imgId, hashes)
 
-def addDir(dbId, path, recurse, fname_as_id=False):
+
+def add_dir(dbId, path, recurse, fname_as_id=False):
     """
     Visits a directory recursively and add supported images into database space.
 
@@ -904,7 +963,8 @@ def addDir(dbId, path, recurse, fname_as_id=False):
     dbId = int(dbId)
     return img_db.add_dir(dbId, path, recurse, fname_as_id)
 
-def loadAllDbsAs(path):
+
+def load_all_dbs_as(path):
     """
     Loads from disk all previously persisted database spaces. (File resulting from a previous call to L{saveAllDbs}).
 
@@ -918,7 +978,8 @@ def loadAllDbsAs(path):
     
     return img_db.loadalldbs(path)
 
-def saveAllDbs():
+
+def save_all_dbs():
     """
     Persist all existing database spaces on the data file defined at the config file I{settings.py}
 
@@ -930,7 +991,8 @@ def saveAllDbs():
     
     return img_db.savealldbs(settings.core.get('database', 'databasePath'))
 
-def loadAllDbs():
+
+def load_all_dbs():
     """
     Loads from disk all previously persisted database spaces on the data file defined at the config file I{settings.py}
 
@@ -942,7 +1004,8 @@ def loadAllDbs():
     
     return img_db.loadalldbs(settings.core.get('database', 'databasePath'))
 
-def removeDb(dbid):
+
+def remove_db(dbid):
     """
     Remove a database. All images associated with it are also removed.
 
@@ -954,14 +1017,17 @@ def removeDb(dbid):
     
     return img_db.remove_db(dbid)
 
-def getGlobalServerStats():
+
+def get_global_server_stats():
     """
     Return the most similar images to the supplied one.
 
     :rtype:   map
     
     :since: 0.7
-    :return:  key is stat name, value is value. Keys are ['isk-daemon uptime', 'Number of databases', 'Total memory usage', 'Resident memory usage', 'Stack memory usage']
+    :return:  key is stat name, value is value.
+        Keys are ['isk-daemon uptime', 'Number of databases', 'Total memory usage', 'Resident memory usage',
+        'Stack memory usage']
     """    
     
     stats = {}
@@ -974,7 +1040,8 @@ def getGlobalServerStats():
     
     return stats
 
-def isValidDb(dbId):
+
+def is_valid_db(dbId):
     """
     Return whether database space id has already been defined
 
@@ -989,7 +1056,8 @@ def isValidDb(dbId):
     dbId = int(dbId)
     return img_db.is_valid_db(dbId)
 
-def getIskLog(window = 30):
+
+def get_isk_log(window = 30):
     """
     Returns the last lines of text in the iskdaemon instance log
 
@@ -1004,55 +1072,53 @@ def getIskLog(window = 30):
     
     return tail(open(settings.core.get('daemon','logPath')), window)
 
-CommonDatabaseFacadeFunctions = [
-                                 query_img_id,
-                                 addImg,
-                                 saveDb,
-                                 loadDb,
-                                 removeImg,
-                                 removeImgBulk,
-                                 resetDb,
-                                 removeDb,
-                                 createDb,
-                                 getDbImgCount,
-                                 isImgOnDb,
-                                 getImgDimensions,
-                                 calcImgAvglDiff,
-                                 calcImgDiff,
-                                 getImgAvgl,
-                                 getDbList,
-                                 getDbDetailedList,
-                                 getDbImgIdList,
-                                 isValidDb,
-                                 getGlobalServerStats,
-                                 saveDbAs,
-                                 saveAllDbs,
-                                 loadAllDbs,
-                                 saveAllDbsAs,
-                                 loadAllDbsAs,
-                                 addDir,
-                                 shutdownServer,
-                                 addKeywordImg,
-                                 addKeywordsImg,
-                                 addKeywordImgBulk,
-                                 removeKeywordImg,
-                                 removeAllKeywordImg,
-                                 removeAllKeywordImgBulk,
-                                 getKeywordsImg,
-                                 queryImgIDKeywords,
-                                 queryImgIDKeywordsBulk,
-                                 queryImgIDFastKeywords,
-                                 getAllImgsByKeywords,
-                                 getKeywordsVisualDistance,
-                                 getKeywordsPopular,
-                                 getClusterDb,
-                                 getClusterKeywords,
-                                 getIdsBloomFilter,     
-                                 mostPopularKeywords,                                                             
-                                 getIskLog,
-                                 queryImgBlob,
-                                 queryImgPath,
-                                 addImgBlob,
-                                    ]
-
-
+public = [
+     query_img_id,
+     add_img,
+     save_db,
+     load_db,
+     remove_img,
+     remove_img_bulk,
+     reset_db,
+     remove_db,
+     create_db,
+     get_db_img_count,
+     is_img_on_db,
+     get_img_dimensions,
+     calc_img_avgl_diff,
+     calc_img_diff,
+     get_img_avgl,
+     get_db_list,
+     get_db_detailed_list,
+     get_db_img_id_list,
+     is_valid_db,
+     get_global_server_stats,
+     save_db_as,
+     save_all_dbs,
+     load_all_dbs,
+     save_all_dbs_as,
+     load_all_dbs_as,
+     add_dir,
+     shutdown_server,
+     add_keyword_img,
+     add_keywords_img,
+     add_keyword_img_bulk,
+     remove_keyword_img,
+     remove_all_keyword_img,
+     remove_all_keyword_img_bulk,
+     get_keywords_img,
+     query_img_id_keywords,
+     query_img_id_keywords_bulk,
+     query_img_id_fast_keywords,
+     get_all_imgs_by_keywords,
+     get_keywords_visual_distance,
+     get_keywords_popular,
+     get_cluster_db,
+     get_cluster_keywords,
+     get_ids_bloom_filter,
+     most_popular_keywords,
+     get_isk_log,
+     query_img_blob,
+     query_img_path,
+     add_img_blob,
+]
