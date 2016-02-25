@@ -7,17 +7,18 @@ Backend factory
 import logging
 import os
 
-from isk import settings, __version__
+from isk import __version__
+from isk.conf import settings
 from isk.backends.imgseeklib.imagedb import ImgDB
 
 
 logger = logging.getLogger(__name__)
 
-db_path = os.path.expanduser(settings.core.get('database', 'databasePath'))
+db_path = os.path.expanduser(settings.DATABASE_PATH)
 
 logger.info("+- Initializing isk api (version %s) ...", __version__)
 
-backend = ImgDB(settings)
+backend = ImgDB(settings.AUTOMATIC_SAVE, settings.SAVE_INTERVAL)
 backend.loadalldbs(db_path)
 
 logger.info("| image database initialized")

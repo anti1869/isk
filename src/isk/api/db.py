@@ -5,12 +5,12 @@ Image database management API
 import logging
 import os
 
-from isk import settings
+from isk.conf import settings
 from isk.backends.factory import backend
 
 logger = logging.getLogger(__name__)
 
-db_path = os.path.expanduser(settings.core.get('database', 'databasePath'))
+db_path = os.path.expanduser(settings.DATABASE_PATH)
 
 
 def save_db(db_id: int) -> bool:

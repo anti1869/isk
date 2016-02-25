@@ -126,11 +126,12 @@ def count_query(db_space: DBSpace) -> None:
 
 
 class ImgDB(object):
-    def __init__(self, settings):
+    def __init__(self, automatic_save, save_interval):
         self.db_spaces = {}
         self.globalFileName = 'global-imgdb-not-saved-yet'
         # global statistics
-        self._settings = settings
+        self._automatic_save = automatic_save
+        self._save_interval = save_interval
 
     @utils.dump_args
     def createdb(self, db_id) -> int:
@@ -273,11 +274,9 @@ class ImgDB(object):
 
         if res != 0:  # add successful
             dbSpace.lastId = newid + 1
-            # time to save automatically ?            
+            # time to save automatically ?
             # TODO this should be a reactor timer
-            if self._settings.core.getboolean('database', 'automaticSave') and \
-                                    time.time() - dbSpace.lastSaveTime > self._settings.core.getint('database',
-                                                                                                    'saveInterval'):
+            if self._automatic_save and time.time() - dbSpace.lastSaveTime > self._save_interval:
                 dbSpace.lastSaveTime = time.time()
                 self.savealldbs()
         return res
@@ -298,9 +297,7 @@ class ImgDB(object):
         if res != 0:  # add successful
             dbSpace.lastId = newid + 1
             # time to save automatically ?            
-            if self._settings.core.getboolean('database', 'automaticSave') and \
-                                    time.time() - dbSpace.lastSaveTime > self._settings.core.getint('database',
-                                                                                                    'saveInterval'):
+            if self._automatic_save and time.time() - dbSpace.lastSaveTime > self._save_interval:
                 dbSpace.lastSaveTime = time.time()
                 self.savealldbs()
         return res
