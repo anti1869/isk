@@ -36,7 +36,7 @@ from isk import settings, __version__
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'  # Whether this module is imported by readthedocs.org builder
 if not on_rtd:  # If so, disable loading any extension modules RTC can't hadle
-    from isk.imgSeekLib.ImageDB import ImgDB
+    from isk.imgseeklib.imagedb import ImgDB
 
 # Globals
 daemon_start_time = time.time()

@@ -30,7 +30,7 @@ from typing import Sequence, List, Tuple
 from isk import utils
 
 try:
-    from isk.imgSeekLib import imgdb
+    from isk.imgseeklib import imgdb
 except ImportError:
     logging.error(
         "Unable to load the C++ extension '_imgdb.so(pyd)' module. "
