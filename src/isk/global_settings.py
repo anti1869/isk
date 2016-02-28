@@ -56,8 +56,8 @@ COMMON_PLACES = (
     # os.path.join(os.environ.get("ISK_CONFIG"), CONFIG_FILENAME),
 )
 
-HTTP_HOST = "0.0.0.0"
-HTTP_PORT = 31128
+HOST = "0.0.0.0"
+PORT = 31128
 DEBUG = True
 SAVE_ALL_ON_SHUTDOWN = True
 DATABASE_PATH = "~/isk-db"
@@ -68,6 +68,7 @@ LOG_PATH = "isk-daemon.log"
 LOG_DEBUG = False
 URL_DOWNLOADER_TIMEOUT = 10
 
+DEBUG_AUTORELOAD_APP = True
 
 #
 # # read from many possible locations
