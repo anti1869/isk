@@ -5,7 +5,8 @@ Image database management API
 import logging
 import os
 
-from isk.conf import settings
+from sunhead.conf import settings
+
 from isk.backends.factory import backend
 
 logger = logging.getLogger(__name__)

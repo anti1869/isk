@@ -7,8 +7,9 @@ Backend factory
 import logging
 import os
 
+from sunhead.conf import settings
+
 from isk import __version__
-from isk.conf import settings
 from isk.backends.imgseeklib.imagedb import ImgDB
 
 

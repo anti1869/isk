@@ -103,15 +103,21 @@ setup(
     ext_modules=[
         Extension(
             "_imgdb", [
-                "src/isk/imgSeekLib/imgdb.cpp",
-                "src/isk/imgSeekLib/haar.cpp",
-                "src/isk/imgSeekLib/imgdb.i",
-                "src/isk/imgSeekLib/bloom_filter.cpp",
+                "src/isk/backends/imgseeklib/imgdb.cpp",
+                "src/isk/backends/imgseeklib/haar.cpp",
+                "src/isk/backends/imgseeklib/imgdb.i",
+                "src/isk/backends/imgseeklib/bloom_filter.cpp",
                 ],
             swig_opts=['-c++'],
             **build_kwargs,
         )],
     install_requires=[
         "colorlog",
+        # "sunhead>=5.0.0",
     ],
+    entry_points={
+        'console_scripts': [
+            'isk = isk.__main__:main',
+        ],
+    }
 )
