@@ -71,7 +71,7 @@ def require_known_db_id(func):
         if db_id not in imgdb_instance.db_spaces:
             raise ImageDBException(
                 "Attempt to call %s with unknown dbid %d. "
-                "Have you created it first with createdb() or loaddb()?" % (func.func_name, args[1])
+                "Have you created it first with createdb() or loaddb()?" % (func.__name__, db_id)
             )
         return func(imgdb_instance, db_id, *args, **kwargs)
     return _wrapper

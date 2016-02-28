@@ -12,8 +12,10 @@ urlconf = (
 
     # Database management
     ("GET", "/db/", db.DBListView),
-    ("POST", "/db/", NotImplementedView),
-    ("GET", "/db/{db_id}/", NotImplementedView),
+    ("POST", "/db/", db.DBListView),
+    ("GET", "/db/{db_id}/", db.DBView),
+    ("DELETE", "/db/{db_id}/", db.DBView),
+    ("POST", "/db/{db_id}/reset/", NotImplementedView),
 
     # Images management
     ("GET", "/db/{db_id}/images/", NotImplementedView),
