@@ -1,5 +1,5 @@
 """
-Backend factory
+Backend factory.
 """
 
 # TODO: Implement real factory

@@ -2,6 +2,7 @@
 Urls configuration for REST endpoint.
 """
 
+from isk.web.rest.views import db
 from isk.web.rest.views.generic import NotImplementedView
 
 urlconf = (
@@ -10,7 +11,7 @@ urlconf = (
     ("GET", "/", NotImplementedView),
 
     # Database management
-    ("GET", "/db/", NotImplementedView),
+    ("GET", "/db/", db.DBListView),
     ("POST", "/db/", NotImplementedView),
     ("GET", "/db/{db_id}/", NotImplementedView),
 

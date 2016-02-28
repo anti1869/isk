@@ -2,7 +2,6 @@
 Helpers & generics
 """
 
-
 from sunhead.rest.views import JSONView
 
 
