@@ -2,7 +2,7 @@
 Urls configuration for REST endpoint.
 """
 
-from isk.web.rest.views import db, images
+from isk.web.rest.views import db, images, query
 from isk.web.rest.views.generic import NotImplementedView
 
 urlconf = (
@@ -27,7 +27,8 @@ urlconf = (
     ("DELETE", "/db/{db_id}/images/{image_id}/keywords/", NotImplementedView),
 
     # Querying
-    ("GET", "/db/{db_id}/query/", NotImplementedView),
+    ("GET", "/db/{db_id}/query/", query.SimilarImagesQuery),
+    ("POST", "/db/{db_id}/query/", NotImplementedView),
 
     # Keywords management
     ("GET", "/db/{db_id}/keywords/", NotImplementedView),

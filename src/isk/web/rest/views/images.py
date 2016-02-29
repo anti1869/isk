@@ -2,14 +2,11 @@
 Image management REST API views.
 """
 
-from abc import ABCMeta, abstractmethod
-import asyncio
-from functools import partial
+from abc import ABCMeta
 
 from aiohttp import web_exceptions
 
 from isk.api import images as images_api
-from isk.api.executor import isk_api_executor
 from isk.web.rest.views.db import BaseDBView
 
 
