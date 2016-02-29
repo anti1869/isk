@@ -33,7 +33,7 @@ import os
 from sunhead.conf import settings
 
 from isk.backends.factory import backend
-from isk.urldownloader import urlToFile
+from isk.urldownloader import url_to_file
 
 logger = logging.getLogger(__name__)
 
@@ -192,7 +192,7 @@ def add_img(dbId, id, filename, fileIsUrl=False):
 
     if fileIsUrl: # download it first
         tempFName = os.path.expanduser(settings.core.get('database','databasePath')) + ('_tmp_%d_%d.jpg' % (dbId,id))
-        urlToFile(filename,tempFName)
+        url_to_file(filename, tempFName)
         filename = tempFName
     res = 0
     try:

@@ -19,7 +19,7 @@ urlconf = (
 
     # Images management
     ("GET", "/db/{db_id}/images/", images.ImagesListView),
-    ("POST", "/db/{db_id}/images/", NotImplementedView),
+    ("POST", "/db/{db_id}/images/", images.ImagesListView),
     ("GET", "/db/{db_id}/images/{image_id}/", images.ImageView),
     ("DELETE", "/db/{db_id}/images/{image_id}/", NotImplementedView),
     ("GET", "/db/{db_id}/images/{image_id}/keywords/", images.ImageKeywordsView),
