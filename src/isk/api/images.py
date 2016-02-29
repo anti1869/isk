@@ -30,7 +30,8 @@ import time
 import logging
 import os
 
-from isk import settings
+from sunhead.conf import settings
+
 from isk.backends.factory import backend
 from isk.urldownloader import urlToFile
 

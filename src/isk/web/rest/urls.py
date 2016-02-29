@@ -2,7 +2,7 @@
 Urls configuration for REST endpoint.
 """
 
-from isk.web.rest.views import db
+from isk.web.rest.views import db, images
 from isk.web.rest.views.generic import NotImplementedView
 
 urlconf = (
@@ -18,11 +18,11 @@ urlconf = (
     ("POST", "/db/{db_id}/reset/", NotImplementedView),
 
     # Images management
-    ("GET", "/db/{db_id}/images/", NotImplementedView),
+    ("GET", "/db/{db_id}/images/", images.ImagesListView),
     ("POST", "/db/{db_id}/images/", NotImplementedView),
-    ("GET", "/db/{db_id}/images/{image_id}/", NotImplementedView),
+    ("GET", "/db/{db_id}/images/{image_id}/", images.ImageView),
     ("DELETE", "/db/{db_id}/images/{image_id}/", NotImplementedView),
-    ("GET", "/db/{db_id}/images/{image_id}/keywords/", NotImplementedView),
+    ("GET", "/db/{db_id}/images/{image_id}/keywords/", images.ImageKeywordsView),
     ("POST", "/db/{db_id}/images/{image_id}/keywords/", NotImplementedView),
     ("DELETE", "/db/{db_id}/images/{image_id}/keywords/", NotImplementedView),
 

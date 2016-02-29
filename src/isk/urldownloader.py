@@ -21,7 +21,7 @@
 ###############################################################################
 
 from urllib.request import urlopen, Request
-from isk import settings
+from sunhead.conf import settings
 import logging
 
 urlopen = urlopen
