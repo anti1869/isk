@@ -2,7 +2,7 @@
 Urls configuration for REST endpoint.
 """
 
-from isk.web.rest.views import db, images, query
+from isk.web.rest.views import db, images, query, dropbox
 from isk.web.rest.views.generic import NotImplementedView
 
 urlconf = (
@@ -19,12 +19,17 @@ urlconf = (
 
     # Images management
     ("GET", "/db/{db_id}/images/", images.ImagesListView),
-    ("POST", "/db/{db_id}/images/", images.ImagesListView),
     ("GET", "/db/{db_id}/images/{image_id}/", images.ImageView),
     ("DELETE", "/db/{db_id}/images/{image_id}/", NotImplementedView),
     ("GET", "/db/{db_id}/images/{image_id}/keywords/", images.ImageKeywordsView),
     ("POST", "/db/{db_id}/images/{image_id}/keywords/", NotImplementedView),
     ("DELETE", "/db/{db_id}/images/{image_id}/keywords/", NotImplementedView),
+
+    # Adding images to DB
+    ("GET", "/db/{db_id}/dropbox/", NotImplementedView),
+    ("POST", "/db/{db_id}/dropbox/url/", dropbox.ImagesDropboxUrl),
+    ("POST", "/db/{db_id}/dropbox/image/", dropbox.ImagesDropboxFile),
+    ("POST", "/db/{db_id}/dropbox/archive/", dropbox.ImagesDropboxArchive),
 
     # Querying
     ("GET", "/db/{db_id}/query/", query.SimilarImagesQuery),
