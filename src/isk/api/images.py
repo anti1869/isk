@@ -209,22 +209,17 @@ def add_img(db_id: int, image_id: int, filename: str, file_is_url: bool = False)
     return res
 
 
-def remove_img(dbId, id):
+def remove_img(db_id: int, id: int) -> bool:
     """
     Remove image from database space.
 
-    :type  dbId: number
-    :param dbId: Database space id.
-    :type  id: number
+    :param db_id: Database space id.
     :param id: Target image id.
-    :rtype:   number
     
     :since: 0.7
     :return:  1 in case of success.
     """    
-    id = int(id)
-    dbId = int(dbId)    
-    return backend.remove_img(dbId, id)
+    return backend.remove_img(db_id, id)
 
 
 def remove_img_bulk(dbId, ids):

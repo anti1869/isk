@@ -307,10 +307,9 @@ class ImgDB(object):
 
     @utils.require_known_db_id
     @utils.dump_args
-    def remove_img(self, dbId, id):
+    def remove_img(self, db_id, id) -> bool:
         # TODO should also call the code that saves db after a number of ops
-        # id = long(id)
-        return imgdb.removeID(dbId, id)
+        return bool(imgdb.removeID(db_id, id))
 
     def get_db_detailed_list(self) -> dict:
         db_id_list = self.get_db_list()

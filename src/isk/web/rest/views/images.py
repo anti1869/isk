@@ -65,6 +65,11 @@ class ImageView(BaseImagesView):
         }
         return data
 
+    async def delete(self):
+        terminator = await self._hit_api(images_api.remove_img, self.requested_db_id, self.requested_image_id)
+        assert terminator
+        raise web_exceptions.HTTPNoContent
+
 
 class ImageKeywordsView(ImageView):
 
