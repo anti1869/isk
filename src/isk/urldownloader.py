@@ -22,46 +22,57 @@
 #
 ###############################################################################
 
-import aiohttp
-
-from urllib.request import urlopen, Request
-from sunhead.conf import settings
+import asyncio
 import logging
 
-rootLog = logging.getLogger('urldownloader')
+import aiohttp
+
+from sunhead.conf import settings
 
 
-def url_to_file(theurl, destfile):
+logger = logging.getLogger(__name__)
+
+
+CHUNK_SIZE = 2048
+
+
+# This is expected by Ricardo's old code.
+# Probably will remove it later.
+def url_to_file(url, destfile) -> bool:
     """Entrypoint from blocking code"""
-    data = urlData(theurl)
-    if not data:
-        return False
 
-    f = open(destfile, 'wb')
-    f.write(data)
-    f.close()
-    return True
+    loop = asyncio.get_event_loop()
+    local_path = loop.run_until_complete(
+        download_image(url, destfile)
+    )
+    return bool(local_path)
 
 
-def urlData(theurl):
-    if not theurl:
-        return None
-    if len(theurl) < 12:
-        return None
-    if theurl[:7].lower() != 'http://':
-        return None
+async def download_image(url: str, local_path: str = None, safe: bool = True) -> str:
+    """
+    Download image file and return its full path. If path is already exist, it will be overwritten.
 
-    txdata = None  # if we were making a POST type request, we could encode a dictionary of values here - using urllib.urlencode
-    txheaders = {'User-agent': 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7)', 'Referer': theurl}
+    :param url: Url to download
+    :param local_path: Path on local filesystem to download to.
+    :param safe: If True, will not raise error, instead will return None if there are any troubles.
+    :return: Path to downloaded file.
+    """
 
+    # TODO: Use async fileio
+    # TODO: Check url or downloaded file is actually an image
     try:
-        req = Request(theurl, txdata, txheaders)  # create a request object
-        timeout = settings.core.getint('daemon', 'urlDownloaderTimeout')
-        handle = urlopen(req, timeout=timeout)  # and open it to return a handle on the url
-        data = handle.read()
-        return data
-    except Exception as e:
-        rootLog.error(e)
-        return False
+        with open(local_path, 'wb') as fd:
+            async with aiohttp.get(url) as resp:  # fixme: add timeout
+                assert resp.status == 200
+                while True:
+                    chunk = await resp.content.read(CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    fd.write(chunk)
+    except (AssertionError, aiohttp.errors.ClientError, asyncio.TimeoutError, OSError, IOError):
+        logger.error("Can't download url '%s' to path '%s", url, local_path, exc_info=True)
+        if not safe:
+            raise
+        local_path = None
 
-async def download_image(url: str, local_path: str = None) -> str:
+    return local_path

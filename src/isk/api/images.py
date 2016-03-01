@@ -162,42 +162,37 @@ def add_img_blob(dbId, id, data):
     return res
 
 
-def add_img(dbId, id, filename, fileIsUrl=False):
+def add_img(db_id: int, image_id: int, filename: str, file_is_url: bool = False) -> bool:
     """
     Add image to database space. Image file is read, processed and indexed.
     After this indexing is done, image can be removed from file system.
 
-    :type  dbId: number
-    :param dbId: Database space id.
-    :type  id: number
-    :param id: Target image id. The image located on filename will be indexed and from now on should be
+    :param db_id: Database space id.
+    :param image_id: Target image id. The image located on filename will be indexed and from now on should be
         refered to isk-daemon as this supplied id.
-    :type  filename: string
     :param filename: Physical full file path for the image to be indexed.
         Should be in one of the supported formats
         ('jpeg', 'jpg', 'gif', 'png', 'rgb', 'pbm', 'pgm', 'ppm', 'tiff', 'tif', 'rast', 'xbm', 'bmp').
         For better results image should have dimension of at least 128x128. Thumbnails are ok.
         Bigger images will be scaled down to 128x128.
-    :type  fileIsUrl: boolean
-    :param fileIsUrl: if true, filename is interpreted as an HTTP url and the remote image
+    :param file_is_url: if true, filename is interpreted as an HTTP url and the remote image
         it points to downloaded and saved to a temporary location (same directory where database file is)
         before being added to database.
-    :rtype:   number
     
     :since: 0.7
-    :return:  1 in case of success.
+    :return:  True in case of success.
     """
-    dbId = int(dbId)
-    id = int(id)
-
-    if fileIsUrl: # download it first
-        tempFName = os.path.expanduser(settings.core.get('database','databasePath')) + ('_tmp_%d_%d.jpg' % (dbId,id))
+    if file_is_url: # download it first
+        # TODO: May be this need to be deprecated
+        tempFName = os.path.expanduser(settings.core.get('database','databasePath')) + ('_tmp_%d_%d.jpg' % (db_id, image_id))
         url_to_file(filename, tempFName)
         filename = tempFName
-    res = 0
+
+    res = False
+
     try:
-        #TODO id should be unsigned long int or something even bigger, also must review swig declarations
-        res = backend.add_image(dbId, filename, id)
+        # TODO id should be unsigned long int or something even bigger, also must review swig declarations
+        res = backend.add_image(db_id, filename, image_id)
     except Exception as e:
         if str(e) == 'image already in db':
             logger.warn(e)
@@ -205,7 +200,8 @@ def add_img(dbId, id, filename, fileIsUrl=False):
             logger.error(e)
         return res
     
-    if (fileIsUrl): os.remove(filename)    
+    if (file_is_url):
+        os.remove(filename)
     
     return res
 

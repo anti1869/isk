@@ -283,8 +283,8 @@ class ImgDB(object):
 
     @utils.require_known_db_id
     @utils.dump_args
-    def add_image(self, dbId, fname, newid=None):
-        dbSpace = self.db_spaces[dbId]
+    def add_image(self, db_id, fname, newid=None) -> bool:
+        dbSpace = self.db_spaces[db_id]
 
         if not newid:
             newid = dbSpace.lastId
@@ -292,7 +292,7 @@ class ImgDB(object):
         newid = newid
         add_count(dbSpace)
         # call imgdb
-        res = imgdb.addImage(dbId, newid, fname)
+        res = imgdb.addImage(db_id, newid, fname)
 
         if res != 0:  # add successful
             dbSpace.lastId = newid + 1
@@ -300,7 +300,7 @@ class ImgDB(object):
             if self._automatic_save and time.time() - dbSpace.lastSaveTime > self._save_interval:
                 dbSpace.lastSaveTime = time.time()
                 self.savealldbs()
-        return res
+        return bool(res)
 
     @utils.require_known_db_id
     @utils.dump_args

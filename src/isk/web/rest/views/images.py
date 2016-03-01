@@ -5,10 +5,15 @@ Image management REST API views.
 from abc import ABCMeta
 import asyncio
 import logging
+import os
+from urllib.parse import urlsplit
 
 from aiohttp import web_exceptions
 
+from sunhead.conf import settings
+
 from isk.api import images as images_api
+from isk.urldownloader import download_image
 from isk.web.rest.views.db import BaseDBView
 
 
@@ -58,9 +63,27 @@ class ImagesListView(BaseImagesView):
 
         raise web_exceptions.HTTPAccepted
 
-    async def add_from_download_url(self, data):
-        download_url = data["download_url"]
-        logger.info("Adding from download_url=%s", download_url)
+    async def add_from_download_url(self, data) -> None:
+        try:
+            image_id = int(data.get("image_id", 0))
+            assert image_id
+        except (AssertionError, ValueError):
+            logger.error("No image id provided in field 'image_id' when requested to download url", exc_info=True)
+            return
+
+        url = data["download_url"]
+        logger.debug("Adding from download_url=%s", url)
+        filename = os.path.basename(urlsplit(url).path)  # Or we can use tmpfile here
+        local_path = os.path.join(settings.TMP_DIR, filename)
+        downloaded_path = await download_image(url, local_path)
+        if not downloaded_path:
+            logger.error("Image is not added from url '%s'", url)
+            return
+
+        result = await self._hit_api(images_api.add_img, self.requested_db_id, image_id, downloaded_path)
+        assert result
+        logger.info("Added id=%s from url %s", image_id, url)
+
 
     async def add_from_image(self, data):
         image_field = data["image"]
@@ -69,6 +92,7 @@ class ImagesListView(BaseImagesView):
     async def add_from_archive(self, data):
         archive_field = data["archive"]
         logger.info("Adding from archive filename=%s", archive_field.filename)
+
 
 
 class ImageView(BaseImagesView):

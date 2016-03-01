@@ -26,6 +26,7 @@ from configparser import SafeConfigParser
 import logging
 from logging.config import dictConfig
 import os
+import tempfile
 #
 # logger = logging.getLogger(__name__)
 #
@@ -69,6 +70,7 @@ LOG_DEBUG = False
 URL_DOWNLOADER_TIMEOUT = 10
 
 DEBUG_AUTORELOAD_APP = True
+TMP_DIR = tempfile.gettempdir()
 
 #
 # # read from many possible locations
