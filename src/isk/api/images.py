@@ -48,6 +48,9 @@ daemon_start_time = time.time()
 has_shutdown = False
 
 
+SUPPORTED_IMAGE_EXTENSIONS = backend.supported_image_extensions
+
+
 def query_img_id(db_id: int, image_id: int, numres: int = 12, sketch: bool = False, fast: bool = False) -> tuple:
     """
     Return the most similar images to the supplied one.
@@ -743,26 +746,21 @@ def add_keywords_img(dbId, imgId, hashes):
     return backend.add_keywords_img(dbId, imgId, hashes)
 
 
-def add_dir(dbId, path, recurse, fname_as_id=False):
+def add_dir(db_id: int, path: str, recursive: bool, fname_as_id: bool = False) -> bool:
     """
     Visits a directory recursively and add supported images into database space.
 
-    :type  dbId: number
-    :param dbId: Database space id.
-    :type  path: string
+    :param db_id: Database space id.
     :param path: Target filesystem full path of the initial dir.
-    :type  recurse: number
-    :param recurse: 1 if should visit recursively
-    :type fname_as_id: bool
+    :param recursive: True if should visit recursively
     :param fname_as_id: Whether to use file names as id. If false, id will be assigned automatically.
-    :rtype:   number
     
     :since: 0.7
     :return:  count of images succesfully added
     """    
-    
-    dbId = int(dbId)
-    return backend.add_dir(dbId, path, recurse, fname_as_id)
+
+    added_count = backend.add_dir(db_id, path, recursive, fname_as_id)
+    return added_count
 
 
 exporting = (

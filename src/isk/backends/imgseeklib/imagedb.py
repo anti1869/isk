@@ -133,6 +133,10 @@ class ImgDB(object):
         self._automatic_save = automatic_save
         self._save_interval = save_interval
 
+    @property
+    def supported_image_extensions(self) -> set:
+        return set(SUPPORTED_IMG_EXTS)
+
     @utils.dump_args
     def createdb(self, db_id) -> int:
         if db_id in self.db_spaces:
@@ -220,7 +224,6 @@ class ImgDB(object):
     def add_dir(self, dbId, path, recurse, fname_as_id=False):
 
         path = safe_str(path)
-
         addedCount = 0
         dbSpace = self.db_spaces[dbId]
         if not os.path.isdir(path):
@@ -238,7 +241,7 @@ class ImgDB(object):
                     try:
                         image_id = int(file_name)
                     except ValueError:
-                        logger.error("Can not get id from filename {}. Skipping".format(file_name))
+                        logger.warning("Can not get id from filename {}. Skipping".format(file_name))
                         continue
 
                 # Add image to db
