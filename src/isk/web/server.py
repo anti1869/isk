@@ -4,6 +4,9 @@ Web server worker implementation. Based on SunHead framework, which is in turn b
 
 import logging
 
+from aiocron import crontab
+
+from sunhead.conf import settings
 from sunhead.workers.http.server import Server
 
 from isk.api.db import save_all_dbs
@@ -29,7 +32,16 @@ class IskHTTPServer(Server):
         urls = self._map_to_prefix(REST_URL_PREFIX, rest_urlconf)
         return urls
 
+    def init_requirements(self, loop):
+        super().init_requirements(loop)
+        periodic_db_saver = crontab(settings.PERIODIC_DB_SAVE_CRONTAB, self._periodic_dbs_save, start=False)
+        periodic_db_saver.start()
+
     def cleanup(self, *args, **kwargs):
         super().cleanup(*args, **kwargs)
         num = save_all_dbs()
         logger.info("%s databases saved on exit", num)
+
+    async def _periodic_dbs_save(self):
+        num = save_all_dbs()
+        logger.debug("Periodic DB save. %s spaces saved", num)

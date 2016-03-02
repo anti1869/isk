@@ -111,6 +111,8 @@ LOGGING = {
     }
 }
 
+PERIODIC_DB_SAVE_CRONTAB = "* * * * *"
+
 # dictConfig(LOGGING)
 #
 # if len(conffile) < 1:

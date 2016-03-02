@@ -112,6 +112,7 @@ setup(
             **build_kwargs,
         )],
     install_requires=[
+        "aiocron",
         "colorlog",
         # "sunhead>=5.0.0",
     ],
