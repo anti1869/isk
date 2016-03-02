@@ -375,8 +375,8 @@ class ImgDB(object):
 
     @utils.require_known_db_id
     @utils.dump_args
-    def add_keyword_img(self, dbId, imgId, hash):
-        return imgdb.addKeywordImg(dbId, imgId, hash)
+    def add_keyword_img(self, db_id: int, image_id: int, keyword_id: int) -> bool:
+        return imgdb.addKeywordImg(db_id, image_id, keyword_id)
 
     @utils.require_known_db_id
     def get_cluster_keywords(self, dbId, numClusters, keywords):

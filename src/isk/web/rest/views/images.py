@@ -88,3 +88,22 @@ class ImageKeywordsView(ImageView):
             }
         )
         return data
+
+    def _get_keyword_id_from_post_data(self, data) -> int:
+        try:
+            keyword_id = int(data.get("keyword_id", 0))
+            assert keyword_id
+        except (AssertionError, ValueError):
+            logger.error("No keyword id provided in field 'keyword_id'", exc_info=True)
+            keyword_id = None
+        return keyword_id
+
+    async def post(self):
+        data = await self.request.post()
+        keyword_id = self._get_keyword_id_from_post_data(data)
+        # TODO: Graceful exception resolution here, check for dupes, etc.
+        assert await self._hit_api(
+            images_api.add_keyword_img, self.requested_db_id, self.requested_image_id, keyword_id
+        )
+        raise web_exceptions.HTTPNoContent
+

@@ -357,24 +357,19 @@ def get_db_img_id_list(db_id: int) -> tuple:
     return result
 
 
-def add_keyword_img(dbId, imgId, hash):
+def add_keyword_img(db_id: int, image_id: int, keyword_id: int) -> bool:
     """
     Adds a keyword to an image.
 
-    :type  dbId: number
-    :param dbId: Database space id.
-    :type  imgId: number
-    :param imgId: Target image id.
-    :type  hash: number
-    :param hash: Keyword id.
+    :param db_id: Database space id.
+    :param image_id: Target image id.
+    :param keyword_id: Keyword id.
     :rtype:   boolean
     
     :since: 0.7
-    :return:  true if operation was succesful
+    :return:  True if operation was succesful
     """
-    dbId = int(dbId)
-    imgId = int(imgId)
-    return backend.add_keyword_img(dbId, imgId, hash)
+    return backend.add_keyword_img(db_id, image_id, keyword_id)
 
 
 def add_keyword_img_bulk(dbId, data):
@@ -508,8 +503,8 @@ def get_all_imgs_by_keywords(db_id, numres: int, kw_join_type: int, keyword_id_l
     :since: 0.7
     :return:  array of image ids
     """
-    if not keyword_id_list == 0:
-        keyword_id_list = [0]
+    if not keyword_id_list:
+        keyword_id_list = (0,)
     
     return backend.get_all_imgs_by_keywords(db_id, numres, kw_join_type, keyword_id_list)
 
