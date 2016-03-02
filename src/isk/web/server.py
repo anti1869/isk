@@ -3,9 +3,11 @@ Web server worker implementation. Based on SunHead framework, which is in turn b
 """
 
 import logging
+import os
 
 from aiocron import crontab
 
+from sunhead.cli import banners
 from sunhead.conf import settings
 from sunhead.workers.http.server import Server
 
@@ -41,6 +43,11 @@ class IskHTTPServer(Server):
         super().cleanup(*args, **kwargs)
         num = save_all_dbs()
         logger.info("%s databases saved on exit", num)
+
+    def print_banner(self):
+        logo_filename = os.path.join(os.path.dirname(__file__), "templates", "logo.txt")
+        banners.print_banner(logo_filename)
+        super().print_banner()
 
     async def _periodic_dbs_save(self):
         num = save_all_dbs()
