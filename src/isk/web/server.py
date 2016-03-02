@@ -2,9 +2,14 @@
 Web server worker implementation. Based on SunHead framework, which is in turn based on aiohttp web server.
 """
 
+import logging
+
 from sunhead.workers.http.server import Server
 
+from isk.api.db import save_all_dbs
 from isk.web.rest.urls import urlconf as rest_urlconf
+
+logger = logging.getLogger(__name__)
 
 
 REST_URL_PREFIX = "/api/1.0"
@@ -23,3 +28,8 @@ class IskHTTPServer(Server):
     def get_urlpatterns(self):
         urls = self._map_to_prefix(REST_URL_PREFIX, rest_urlconf)
         return urls
+
+    def cleanup(self, *args, **kwargs):
+        super().cleanup(*args, **kwargs)
+        num = save_all_dbs()
+        logger.info("%s databases saved on exit", num)
