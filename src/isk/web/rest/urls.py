@@ -21,9 +21,11 @@ urlconf = (
     ("GET", "/db/{db_id}/images/", images.ImagesListView),
     ("GET", "/db/{db_id}/images/{image_id}/", images.ImageView),
     ("DELETE", "/db/{db_id}/images/{image_id}/", images.ImageView),
-    ("GET", "/db/{db_id}/images/{image_id}/keywords/", images.ImageKeywordsView),
-    ("POST", "/db/{db_id}/images/{image_id}/keywords/", images.ImageKeywordsView),
-    ("DELETE", "/db/{db_id}/images/{image_id}/keywords/", images.ImageKeywordsView),
+    ("GET", "/db/{db_id}/images/{image_id}/keywords/", images.ImageKeywordsListView),
+    ("POST", "/db/{db_id}/images/{image_id}/keywords/", images.ImageKeywordsListView),
+    ("DELETE", "/db/{db_id}/images/{image_id}/keywords/", images.ImageKeywordsListView),
+    ("GET", "/db/{db_id}/images/{image_id}/keywords/{keyword_id}/", images.ImageKeywordView),
+    ("DELETE", "/db/{db_id}/images/{image_id}/keywords/{keyword_id}/", images.ImageKeywordView),
 
     # Adding images to DB
     ("GET", "/db/{db_id}/dropbox/", NotImplementedView),

@@ -645,25 +645,21 @@ def get_keywords_img(dbId, imgId):
     return backend.get_keywords_img(dbId, imgId)
 
 
-def remove_all_keyword_img(dbId, imgId):
+def remove_all_keyword_img(db_id: int, image_id: int) -> bool:
     """
     Remove all keyword associations this image has.
     
     Known issue: keyword based queries will continue to consider the image to be associated
     to this keyword until the database is saved and restored.
 
-    :type  dbId: number
-    :param dbId: Database space id.
-    :type  imgId: number
-    :param imgId: Target image id.
+    :param db_id: Database space id.
+    :param image_id: Target image id.
     :rtype:   boolean
     
     :since: 0.7
     :return:  true if operation succeeded
     """    
-    dbId = int(dbId)
-    imgId = int(imgId)
-    return backend.remove_all_keywords_img(dbId, imgId)
+    return backend.remove_all_keywords_img(db_id, image_id)
 
 
 def remove_all_keyword_img_bulk(dbId, imgIdList):
@@ -689,27 +685,21 @@ def remove_all_keyword_img_bulk(dbId, imgIdList):
     return result
 
 
-def remove_keyword_img(dbId, imgId, hash):
+def remove_keyword_img(db_id: int, image_id: int, keyword_id: int) -> bool:
     """
     Remove the association of a keyword to an image
     
     Known issue: keyword based queries will continue to consider the image to be associated to this
     keyword until the database is saved and restored.
 
-    :type  dbId: number
-    :param dbId: Database space id.
-    :type  imgId: number
-    :param imgId: Target image id.
-    :type  hash: number
-    :param hash: Keyword id.
-    :rtype:   boolean
+    :param db_id: Database space id.
+    :param image_id: Target image id.
+    :param keyword_id: Keyword id.
     
     :since: 0.7
-    :return:  true if operation succeeded
+    :return:  True if operation succeeded
     """    
-    dbId = int(dbId)
-    imgId = int(imgId)
-    return backend.remove_keyword_img(dbId, imgId, hash)
+    return backend.remove_keyword_img(db_id, image_id, keyword_id)
 
 
 def add_keywords_img(dbId, imgId, hashes):

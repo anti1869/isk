@@ -9,6 +9,7 @@ from aiohttp import web_exceptions
 
 from isk.api import images as images_api
 from isk.web.rest.views.db import BaseDBView
+from isk.web.rest.views.keywords import BaseKeywordsView
 
 
 logger = logging.getLogger(__name__)
@@ -71,7 +72,7 @@ class ImageView(BaseImagesView):
         raise web_exceptions.HTTPNoContent
 
 
-class ImageKeywordsView(ImageView):
+class ImageKeywordsListView(ImageView):
 
     def _get_context_futures(self):
         fs = [
@@ -107,3 +108,43 @@ class ImageKeywordsView(ImageView):
         )
         raise web_exceptions.HTTPNoContent
 
+    async def delete(self):
+        # TODO: Graceful error handling needs to be done here also
+        assert await self._hit_api(
+            images_api.remove_all_keyword_img,
+            self.requested_db_id,
+            self.requested_image_id
+        )
+        raise web_exceptions.HTTPNoContent
+
+
+class ImageKeywordView(BaseKeywordsView, ImageView):
+
+    def _get_context_futures(self):
+        fs = [
+            self.check_keyword_exist(),
+        ]
+        return fs
+
+    async def check_keyword_exist(self):
+        keywords = set(
+            await self._hit_api(images_api.get_keywords_img, self.requested_db_id, self.requested_image_id)
+        )
+        if self.requested_keyword_id not in keywords:
+            raise web_exceptions.HTTPNotFound
+
+        data = {
+            "image_has_keyword": True,
+        }
+        return data
+
+    async def delete(self):
+        # TODO: Graceful error handling needs to be done here
+        assert await self._hit_api(
+            images_api.remove_keyword_img,
+            self.requested_db_id,
+            self.requested_image_id,
+            self.requested_keyword_id
+        )
+
+        raise web_exceptions.HTTPNoContent

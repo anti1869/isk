@@ -433,13 +433,13 @@ class ImgDB(object):
 
     @utils.require_known_db_id
     @utils.dump_args
-    def remove_all_keywords_img(self, dbId, imgId):
-        return imgdb.removeAllKeywordImg(dbId, imgId)
+    def remove_all_keywords_img(self, db_id: int, image_id: int) -> bool:
+        return imgdb.removeAllKeywordImg(db_id, image_id)
 
     @utils.require_known_db_id
     @utils.dump_args
-    def remove_keyword_img(self, dbId, imgId, hash):
-        return imgdb.removeKeywordImg(dbId, imgId, hash)
+    def remove_keyword_img(self, db_id: int, image_id: int, keyword_id: int) -> bool:
+        return imgdb.removeKeywordImg(db_id, image_id, keyword_id)
 
     @utils.require_known_db_id
     @utils.dump_args
