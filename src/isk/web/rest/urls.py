@@ -31,7 +31,7 @@ urlconf = (
     ("GET", "/db/{db_id}/dropbox/", NotImplementedView),
     ("POST", "/db/{db_id}/dropbox/url/", dropbox.ImagesDropboxUrl),
     ("POST", "/db/{db_id}/dropbox/image/", dropbox.ImagesDropboxFile),
-    ("POST", "/db/{db_id}/dropbox/archive/", dropbox.ImagesDropboxArchive),
+    ("POST", "/db/{db_id}/dropbox/tgz/", dropbox.ImagesDropboxTgz),
 
     # Querying
     ("GET", "/db/{db_id}/query/", query.SimilarImagesQuery),

@@ -3,7 +3,6 @@ Image dropbox - adding images to DB in numerous ways.
 """
 
 from abc import ABCMeta, abstractmethod
-import asyncio
 import logging
 import os
 import tarfile
@@ -96,7 +95,7 @@ class ImagesDropboxFile(ImagesDropbox):
         logger.debug("Added id=%s", image_id)
 
 
-class ImagesDropboxArchive(ImagesDropbox):
+class ImagesDropboxArchive(ImagesDropbox, metaclass=ABCMeta):
 
     TMP_FILE_NAME = "archive.tgz"
 
@@ -108,6 +107,13 @@ class ImagesDropboxArchive(ImagesDropbox):
             added = await self._hit_api(images_api.add_dir, self.requested_db_id, tmpdirname, True, True)
             logger.info("Added %s file(s) from uploaded archive", added)
         await self._hit_api(db_api.save_all_dbs)
+
+    @abstractmethod
+    async def _unarchive(self, archive_path: str, cleanup: bool = True) -> None:
+        pass
+
+
+class ImagesDropboxTgz(ImagesDropboxArchive):
 
     async def _unarchive(self, archive_path: str, cleanup: bool = True) -> None:
         dest = os.path.dirname(archive_path)
@@ -125,5 +131,5 @@ class ImagesDropboxArchive(ImagesDropbox):
                 if ext in images_api.SUPPORTED_IMAGE_EXTENSIONS:
                     yield tarinfo
             except (ValueError, IndexError, AssertionError):
-                # Unsupported file
                 pass
+                # Unsupported file
