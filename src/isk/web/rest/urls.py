@@ -2,7 +2,7 @@
 Urls configuration for REST endpoint.
 """
 
-from isk.web.rest.views import db, images, query, dropbox
+from isk.web.rest.views import db, images, query, dropbox, keywords
 from isk.web.rest.views.generic import NotImplementedView
 
 urlconf = (
@@ -36,8 +36,6 @@ urlconf = (
     ("POST", "/db/{db_id}/query/", NotImplementedView),
 
     # Keywords management
-    ("GET", "/db/{db_id}/keywords/", NotImplementedView),
-    ("POST", "/db/{db_id}/keywords/", NotImplementedView),
-    ("GET", "/db/{db_id}/keywords/{keyword_id}/", NotImplementedView),
-    ("DELETE", "/db/{db_id}/keywords/{keyword_id}/", NotImplementedView),
+    ("GET", "/db/{db_id}/keywords/", keywords.KeywordsListView),
+    ("GET", "/db/{db_id}/keywords/{keyword_id}/", keywords.ImagesByKeyword),
 )

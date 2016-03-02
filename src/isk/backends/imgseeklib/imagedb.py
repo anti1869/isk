@@ -395,8 +395,8 @@ class ImgDB(object):
         return imgdb.getKeywordsVisualDistance(dbId, distanceType, keywords)
 
     @utils.require_known_db_id
-    def get_all_imgs_by_keywords(self, dbId, numres, kwJoinType, keywords):
-        return imgdb.getAllImgsByKeywords(dbId, numres, kwJoinType, keywords)
+    def get_all_imgs_by_keywords(self, db_id, numres, kw_join_type, keywords) -> list:
+        return imgdb.getAllImgsByKeywords(db_id, numres, kw_join_type, keywords)
 
     @utils.require_known_db_id
     def query_img_id_fast_keywords(self, dbId, imgId, numres, kwJoinType, keywords):

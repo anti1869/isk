@@ -29,6 +29,7 @@
 import time
 import logging
 import os
+from typing import Sequence
 
 from sunhead.conf import settings
 
@@ -493,29 +494,24 @@ def get_keywords_visual_distance(dbId, distanceType, keywords):
     return backend.get_keywords_visual_distance(dbId, distanceType, keywords)
 
 
-def get_all_imgs_by_keywords(dbId, numres, kwJoinType, keywords):
+# TODO: Add defaults here and explicit kw_join_type
+def get_all_imgs_by_keywords(db_id, numres: int, kw_join_type: int, keyword_id_list: Sequence[int]) -> list:
     """
     Return all images with the given keywords
 
-    :type  dbId: number
-    :param dbId: Database space id.
-    :type  numres: number
+    :param db_id: Database space id.
     :param numres: Number of results desired
-    :type  kwJoinType: number
-    :param kwJoinType: Logical operator for target keywords: 1 for AND, 0 for OR
-    :type  keywords: string
-    :param keywords: comma separated list of keyword ids. An empty string will return random images.
+    :param kw_join_type: Logical operator for target keywords: 1 for AND, 0 for OR
+    :param keyword_id_list: List of keyword ids
     :rtype:   array
 
     :since: 0.7
     :return:  array of image ids
-    """    
-    dbId = int(dbId)
-    keywordIds = [int(x) for x in keywords.split(',') if len(x) > 0]
-    if len(keywordIds) == 0:
-        keywordIds=[0]
+    """
+    if not keyword_id_list == 0:
+        keyword_id_list = [0]
     
-    return backend.get_all_imgs_by_keywords(dbId, numres, kwJoinType, keywordIds)
+    return backend.get_all_imgs_by_keywords(db_id, numres, kw_join_type, keyword_id_list)
 
 
 def query_img_id_fast_keywords(dbId, imgId, numres, kwJoinType, keywords):
