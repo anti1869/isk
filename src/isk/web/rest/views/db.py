@@ -54,3 +54,14 @@ class DBView(BaseDBView):
         terminator = await self._hit_api(db_api.remove_db, self.requested_db_id)
         assert terminator
         raise web_exceptions.HTTPNoContent
+
+
+class DBResetView(BaseDBView):
+
+    def _get_context_futures(self):
+        return []
+
+    async def post(self):
+        assert await self._hit_api(db_api.reset_db, self.requested_db_id)
+        await self._hit_api(db_api.save_all_dbs)
+        raise web_exceptions.HTTPNoContent
