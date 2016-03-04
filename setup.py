@@ -114,6 +114,7 @@ setup(
     install_requires=[
         "aiocron",
         "colorlog",
+        "json-rpc",
         # "sunhead>=5.0.0",
     ],
     entry_points={

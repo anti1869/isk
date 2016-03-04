@@ -9,3 +9,7 @@ class IskException(Exception):
 
 class ImageDBException(IskException):
     """Problem with image db storage"""
+
+
+class IskHttpServerException(IskException):
+    """Problem with http server"""

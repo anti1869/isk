@@ -12,12 +12,15 @@ from sunhead.conf import settings
 from sunhead.workers.http.server import Server
 
 from isk.api.db import save_all_dbs
+from isk.web.jsonrpc import get_jsonrpc_dispatcher
 from isk.web.rest.urls import urlconf as rest_urlconf
+from isk.web.jsonrpc import urlconf as jsonrpc_urlconf
 
 logger = logging.getLogger(__name__)
 
 
 REST_URL_PREFIX = "/api/1.0"
+JSONRPC_URL_PREFIX = "/jsonrpc"
 
 
 class IskHTTPServer(Server):
@@ -31,13 +34,15 @@ class IskHTTPServer(Server):
         return tuple(mapped)
 
     def get_urlpatterns(self):
-        urls = self._map_to_prefix(REST_URL_PREFIX, rest_urlconf)
+        urls = self._map_to_prefix(REST_URL_PREFIX, rest_urlconf) + \
+               self._map_to_prefix(JSONRPC_URL_PREFIX, jsonrpc_urlconf)
         return urls
 
     def init_requirements(self, loop):
         super().init_requirements(loop)
         periodic_db_saver = crontab(settings.PERIODIC_DB_SAVE_CRONTAB, self._periodic_dbs_save, start=False)
         periodic_db_saver.start()
+        self.app["jsonrpc_dispatcher"] = get_jsonrpc_dispatcher()
 
     def cleanup(self, *args, **kwargs):
         super().cleanup(*args, **kwargs)

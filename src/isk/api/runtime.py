@@ -5,7 +5,9 @@ Runtime API
 
 import time
 
-from isk import settings, statistics
+from sunhead.conf import settings
+
+from isk import statistics
 from isk.backends.factory import backend
 
 
