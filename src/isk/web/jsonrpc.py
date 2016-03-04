@@ -38,8 +38,10 @@ Use this RPC instead of REST API interface, if you need more control over Isk.
 """
 
 from itertools import chain
+import logging
 
 from jsonrpc import JSONRPCResponseManager, dispatcher
+from jsonrpc.exceptions import JSONRPCServerError, JSONRPCException
 
 from sunhead.rest.views import BasicView
 
@@ -49,9 +51,11 @@ from isk.api.runtime import exporting as runtime_exporting
 from isk.exceptions import IskHttpServerException
 
 
+logger = logging.getLogger(__name__)
+
+
 def get_jsonrpc_dispatcher():
     for method in chain(db_exporting, images_exporting, runtime_exporting):
-        print(method.__name__)
         dispatcher[method.__name__] = method
     return dispatcher
 
@@ -66,9 +70,13 @@ class JSONRPCView(BasicView):
         request_text = await self.request.text()
 
         # TODO: Make this non-blocking
-        response = JSONRPCResponseManager.handle(
-            request_text, dispatcher
-        )
+        # TODO: Meaningful error handling of JSON-RPC calls
+        try:
+            response = JSONRPCResponseManager.handle(request_text, dispatcher)
+        except Exception:
+            response = JSONRPCServerError()
+            logger.error("JSON-RPC Error", exc_info=True)
+
         return self.basic_response(text=response.json, content_type="application/json")
 
 
